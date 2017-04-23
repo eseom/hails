@@ -131,7 +131,7 @@ server.init = (options) => {
         options: config.swagger,
       },
       Nes,
-      ...config.plugins,
+      ...(config.plugins || []),
     ]
 
     server.register(plugins, (err) => {
