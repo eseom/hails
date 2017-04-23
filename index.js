@@ -113,7 +113,7 @@ server.init = (options) => {
       port: config.port,
     })
 
-    server.register([
+    const plugins = [
       Inert,
       Vision,
       {
@@ -131,7 +131,10 @@ server.init = (options) => {
         options: config.swagger,
       },
       Nes,
-    ], (err) => {
+      ...config.plugins,
+    ]
+
+    server.register(plugins, (err) => {
       if (err) {
         reject(err)
         return
