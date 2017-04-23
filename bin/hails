@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+const spawn = require('child_process').spawn
+const logger = require('../logger')
+
+const command = process.argv[2]
+const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
+
+// map sequelize command
+const execSequelize = (c) => {
+  const call = spawn(sequelizeCli, [c])
+  call.stdout.on('data', (data) => {
+    logger.info(data.toString().trim())
+  })
+  call.stderr.on('data', (data) => {
+    logger.error(data.toString().trim())
+  })
+}
+
+switch (command) {
+  case 'db:up':
+    execSequelize('db:migrate')
+    break
+  case 'db:down':
+    execSequelize('db:migrate:undo')
+    break
+  case 'db:status':
+    execSequelize('db:migrate:status')
+    break
+  case 'db:create':
+    execSequelize('migration:create')
+    break
+  default:
+    break
+}
