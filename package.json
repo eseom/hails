@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "index.js",
   "license": "MIT",
   "bin": {
@@ -9,7 +9,7 @@
   "dependencies": {
     "catbox-redis": "^3.0.1",
     "hapi": "^16.1.1",
-    "hapi-es7-async-handler": "^1.0.6",
+    "hapi-es7-async-handler": "^1.0.7",
     "hapi-swagger": "^7.7.0",
     "inert": "^4.2.0",
     "kue-scheduler": "^0.7.2",
