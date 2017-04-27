@@ -99,7 +99,7 @@ server.init = (options) => {
   })
 
   // intiialize models
-  if (options.useSequelize) {
+  if (config.useSequelize) {
     Object.keys(models).forEach((modelName) => {
       if ('associate' in models[modelName]) models[modelName].associate(models)
     })
