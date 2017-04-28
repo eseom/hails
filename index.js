@@ -56,6 +56,7 @@ const getSequelizeInstance = (config) => {
 
 server.init = (options) => {
   const config = Hoek.applyToDefaults(defaultOptions, options)
+  server.config = config
 
   // register catbox redis
   server.cache.provision({
@@ -68,7 +69,7 @@ server.init = (options) => {
   server.scheduler = getScheduler(config)
 
   // model
-  const sequelize = getSequelizeInstance(config)
+  server.sequelize = getSequelizeInstance(config)
 
   // modules
   const callerDir = Path.dirname(module.parent.filename)
@@ -85,7 +86,7 @@ server.init = (options) => {
       }
       try {
         if (mod === 'model' && config.useSequelize) {
-          const importedModels = sequelize.import(moduleFile)
+          const importedModels = server.sequelize.import(moduleFile)
           Object.keys(importedModels).forEach((it) => {
             models[it] = importedModels[it]
           })
@@ -140,7 +141,20 @@ server.init = (options) => {
         return
       }
 
+      // view
       setViewEngine(server, config)
+
+      // auth
+      try {
+        config.auths.forEach((auth) => {
+          server.auth.scheme(auth[0], auth[1])
+          server.auth.strategy(auth[0], auth[0], {
+            validateFunc: () => { },
+          })
+        })
+      } catch (e) {
+        logger.error(e, e.stack)
+      }
 
       modules.install()
       resolve(() => {server.start()})
