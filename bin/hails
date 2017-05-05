@@ -30,6 +30,15 @@ switch (command) {
   case 'db:create':
     execSequelize('migration:create')
     break
+  case 'db:seed:up':
+    execSequelize('db:seed:all')
+    break
+  case 'db:seed:down':
+    execSequelize('db:seed:undo')
+    break
+  case 'db:seed:create':
+    execSequelize('seed:create')
+    break
   default:
     break
 }
