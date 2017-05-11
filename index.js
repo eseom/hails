@@ -40,7 +40,7 @@ const getSequelizeInstance = (config) => {
     if (!config.database.url) {
       options = config.database
     } else {
-      url = conofig.database.url
+      url = config.database.url
       options = config.database.options
     }
     if (options.dialect) require(`./database/${options.dialect}`)
