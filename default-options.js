@@ -15,6 +15,7 @@ module.exports = {
     grouping: 'tags',
   },
   yar: {
+    storeBlank: false,
     maxCookieSize: 0, // use server side storage
     cache: {
       cache: 'session',
