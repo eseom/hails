@@ -1,8 +1,11 @@
+const Path = require('path')
+
 module.exports = {
-  setViewEngine(server, config) {
+  setViewEngine(server, config, installedDirs) {
     if (!config.viewEngine) return
 
     const isCached = process.env.NODE_ENV === 'production'
+    const templateDirs = installedDirs.map(d => Path.join(d, 'templates'))
 
     switch (config.viewEngine.type) {
       case 'handlebars':
@@ -12,7 +15,7 @@ module.exports = {
             html: require('handlebars'),
           },
           relativeTo: __dirname,
-          path: 'templates',
+          path: templateDirs,
         })
         break
       case 'nunjucks':
@@ -35,7 +38,7 @@ module.exports = {
               }
             }
           },
-          path: 'templates',
+          path: templateDirs,
         })
         break
       default:

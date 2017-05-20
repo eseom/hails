@@ -16,12 +16,13 @@ const server = new Hapi.Server()
 
 const models = []
 const modules = {
-  items: [],
+  list: [],
+  files: [],
   push: (item) => {
-    modules.items.push(item)
+    modules.files.push(item)
   },
   install: () => {
-    modules.items.forEach(it => require(it))
+    modules.files.forEach(it => require(it))
   },
 }
 
@@ -75,6 +76,7 @@ server.init = (options) => {
   const callerDir = Path.dirname(module.parent.filename)
   const allFiles = config.moduleFilenames.concat(config.modelFilenames)
 
+  modules.list = config.modules.map(m => Path.join(callerDir, m))
   config.modules.forEach((m) => {
     allFiles.forEach((mod) => {
       const moduleName = Path.join(callerDir, m, mod)
@@ -142,22 +144,24 @@ server.init = (options) => {
       }
 
       // view
-      setViewEngine(server, config)
+      setViewEngine(server, config, modules.list)
 
       // auth
       try {
-        config.auths.forEach((auth) => {
-          server.auth.scheme(auth[0], auth[1])
-          server.auth.strategy(auth[0], auth[0], {
-            validateFunc: () => { },
+	if (config.auth) {
+          config.auths.forEach((auth) => {
+            server.auth.scheme(auth[0], auth[1])
+            server.auth.strategy(auth[0], auth[0], {
+              validateFunc: () => { },
+            })
           })
-        })
+        }
       } catch (e) {
         logger.error(e, e.stack)
       }
 
       modules.install()
-      resolve(() => {server.start()})
+      resolve(() => server.start())
     })
   })
 }
