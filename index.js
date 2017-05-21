@@ -148,7 +148,7 @@ server.init = (options) => {
 
       // auth
       try {
-	if (config.auth) {
+	if (config.auths) {
           config.auths.forEach((auth) => {
             server.auth.scheme(auth[0], auth[1])
             server.auth.strategy(auth[0], auth[0], {
