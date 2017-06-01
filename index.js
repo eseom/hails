@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize')
+const DataTypes = require('sequelize/lib/data-types')
 const Fs = require('fs')
 const Path = require('path')
 const Hapi = require('hapi')
@@ -71,6 +72,7 @@ server.init = (options) => {
 
   // model
   server.sequelize = getSequelizeInstance(config)
+  server.DataTypes = DataTypes
 
   // modules
   const callerDir = Path.dirname(module.parent.filename)
@@ -88,10 +90,13 @@ server.init = (options) => {
       }
       try {
         if (mod === 'model' && config.useSequelize) {
-          const importedModels = server.sequelize.import(moduleFile)
-          Object.keys(importedModels).forEach((it) => {
-            models[it] = importedModels[it]
-          })
+          try {
+              const importedModels = require(moduleFile)
+              Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
+          } catch(e) {
+              logger.error(e, e.stack)
+              process.exit(-1)
+          }
         } else {
           modules.push(moduleName)
         }
