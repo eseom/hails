@@ -1,10 +1,14 @@
 {
   "name": "hails",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "main": "index.js",
   "license": "MIT",
   "bin": {
     "hails": "bin/hails"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eseom/hails"
   },
   "dependencies": {
     "catbox-redis": "^3.0.1",
