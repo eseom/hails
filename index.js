@@ -117,9 +117,7 @@ server.init = (options) => {
   config.swagger.info.version = config.version
 
   return new Promise((resolve, reject) => {
-    server.connection({
-      port: config.port,
-    })
+    server.connection(config.connection)
 
     const plugins = [
       Inert,

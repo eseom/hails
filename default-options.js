@@ -1,6 +1,9 @@
 module.exports = {
-  version: undefined,
-  port: 3000,
+  vesion: undefined,
+  connection: {
+   host: '0.0.0.0',
+	port: 3000,
+  },
   modules: [],
   moduleFilenames: ['api', 'view', 'task'],
   modelFilenames: ['model'],
