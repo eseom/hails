@@ -1,7 +1,7 @@
 const kue = require('kue-scheduler')
 
 const getScheduler = (config) => {
-  const redis = config.redis.url
+  const redis = config.scheduler.broker.redis
   const jobs = kue.createQueue({
     redis,
   })
@@ -15,8 +15,8 @@ const getScheduler = (config) => {
   }
   schedules = schedules || []
 
-  // make schedule
-  const schedule = {
+  // make scheduler
+  const scheduler = {
     register(name, callback) {
       return jobs.process(name, 10, callback)
     },
@@ -38,7 +38,7 @@ const getScheduler = (config) => {
     })
   })
 
-  return schedule
+  return scheduler
 }
 
 module.exports = {

@@ -60,15 +60,23 @@ server.init = (options) => {
   const config = Hoek.applyToDefaults(defaultOptions, options)
   server.config = config
 
-  // register catbox redis
-  server.cache.provision({
-    engine: require('catbox-redis'),
-    name: 'session',
-    url: config.redis.url,
-  })
+  // server cache for session
+  if (config.yar.engine.type === 'redis') {
+    server.cache.provision({
+      engine: require('catbox-redis'),
+      name: 'session',
+      url: config.redis.url,
+    })
+  } else {
+    server.cache.provision({
+      engine: require('catbox-disk'),
+      name: 'session',
+      cachePath: config.yar.engine.cachePath,
+    })
+  }
 
   // scheduler
-  server.scheduler = getScheduler(config)
+  server.scheduler = config.scheduler.enable ? getScheduler(config) : null
 
   // model
   server.sequelize = getSequelizeInstance(config)
@@ -91,11 +99,11 @@ server.init = (options) => {
       try {
         if (mod === 'model' && config.useSequelize) {
           try {
-              const importedModels = require(moduleFile)
-              Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
-          } catch(e) {
-              logger.error(e, e.stack)
-              process.exit(-1)
+            const importedModels = require(moduleFile)
+            Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
+          } catch (e) {
+            logger.error(e, e.stack)
+            process.exit(-1)
           }
         } else {
           modules.push(moduleName)
@@ -118,6 +126,13 @@ server.init = (options) => {
 
   return new Promise((resolve, reject) => {
     server.connection(config.connection)
+
+    // yar optinos
+    config.yar.storeBlank = false
+    config.yar.maxCookieSize = 0 // use server side storage
+    config.yar.cache = {
+      cache: 'session',
+    }
 
     const plugins = [
       Inert,
@@ -151,7 +166,7 @@ server.init = (options) => {
 
       // auth
       try {
-	if (config.auths) {
+        if (config.auths) {
           config.auths.forEach((auth) => {
             server.auth.scheme(auth[0], auth[1])
             server.auth.strategy(auth[0], auth[0], {

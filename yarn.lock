@@ -314,6 +314,14 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
 
+catbox-disk@^2.0.9:
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/catbox-disk/-/catbox-disk-2.0.9.tgz#60e443707ac0b5b4fbdc745a17ec3b665b8a5c30"
+  dependencies:
+    hoek "4.x.x"
+    mkdirp "^0.5.1"
+    walk "^2.3.9"
+
 catbox-memory@2.x.x:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/catbox-memory/-/catbox-memory-2.0.4.tgz#433e255902caf54233d1286429c8f4df14e822d5"
@@ -898,6 +906,10 @@ for-own@^0.1.4:
   dependencies:
     for-in "^1.0.1"
 
+foreachasync@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/foreachasync/-/foreachasync-3.0.0.tgz#5502987dc8714be3392097f32e0071c9dee07cf6"
+
 forever-agent@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
@@ -1174,9 +1186,9 @@ handlebars@^4.0.5:
   optionalDependencies:
     uglify-js "^2.6"
 
-hapi-es7-async-handler@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/hapi-es7-async-handler/-/hapi-es7-async-handler-1.0.6.tgz#a4de6770f41b09fb21628d40dfa6e3c104be3bef"
+hapi-es7-async-handler@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/hapi-es7-async-handler/-/hapi-es7-async-handler-1.0.10.tgz#5eb6f625ba6da54ab388bd7152ba8d10a8ab3bcf"
   dependencies:
     boom "^4.2.0"
 
@@ -3325,6 +3337,12 @@ vision@^4.1.1:
 void-elements@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
+
+walk@^2.3.9:
+  version "2.3.9"
+  resolved "https://registry.yarnpkg.com/walk/-/walk-2.3.9.tgz#31b4db6678f2ae01c39ea9fb8725a9031e558a7b"
+  dependencies:
+    foreachasync "^3.0.0"
 
 which-module@^1.0.0:
   version "1.0.0"
