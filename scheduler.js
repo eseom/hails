@@ -9,7 +9,7 @@ const getScheduler = (config) => {
   // get schedules from config
   let schedules = []
   try {
-    schedules = config.schedules
+    schedules = config.scheduler.schedules
   } catch (e) {
     schedules = []
   }
