@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   version: undefined,
   port: 3000,
   modules: [],

@@ -1,20 +1,21 @@
-const Sequelize = require('sequelize')
-const Fs = require('fs')
-const Path = require('path')
-const Hapi = require('hapi')
-const Hoek = require('hoek')
-const Inert = require('inert')
-const Vision = require('vision')
-const Nes = require('nes')
+import * as Sequelize from 'sequelize'
+import * as Fs from 'fs'
+import * as Path from 'path'
+import * as Hapi from 'hapi'
+import * as Hoek from 'hoek'
+import * as Inert from 'inert'
+import * as Vision from 'vision'
+import * as Nes from 'nes'
 
-const logger = require('./logger')
-const { getScheduler } = require('./scheduler')
-const { setViewEngine } = require('./view')
-const defaultOptions = require('./default-options')
+import { logger } from './logger'
+import { getScheduler } from './scheduler'
+import { setViewEngine } from './view'
+import * as defaultOptions from './default-options'
 
-const server = new Hapi.Server()
+import { IServer, Configuration } from './types'
 
-const models = []
+export const server: IServer = new Hapi.Server()
+export const models = []
 const modules = {
   list: [],
   files: [],
@@ -37,34 +38,40 @@ const getSequelizeInstance = (config) => {
       process.exit(1)
     }
     let url = ''
-    let options = {}
+    let options: Sequelize.Options
     if (!config.database.url) {
       options = config.database
     } else {
       url = config.database.url
       options = config.database.options
     }
-    if (options.dialect) require(`./database/${options.dialect}`)
-    if (typeof options.logging === 'undefined') options.logging = logger.info
+    if (options.dialect) { require(`./database/${options.dialect}`) }
+    if (typeof options.logging === 'undefined') { options.logging = logger.info }
     if (url) {
       sequelize = new Sequelize(url, options)
     } else {
-      sequelize = new Sequelize(options)
+      sequelize = new Sequelize(undefined, options)
     }
   }
   return sequelize
 }
 
-server.init = (options) => {
+/**
+ * init
+ */
+server.init = (options: Configuration) => {
   const config = Hoek.applyToDefaults(defaultOptions, options)
   server.config = config
 
   // register catbox redis
-  server.cache.provision({
+  // const cacheOptions: Hapi.CatboxServerCacheConfiguration = {
+  const cacheOptions = {
     engine: require('catbox-redis'),
     name: 'session',
     url: config.redis.url,
-  })
+  }
+
+  server.cache.provision(cacheOptions)
 
   // scheduler
   server.scheduler = getScheduler(config)
@@ -104,7 +111,7 @@ server.init = (options) => {
   // intiialize models
   if (config.useSequelize) {
     Object.keys(models).forEach((modelName) => {
-      if ('associate' in models[modelName]) models[modelName].associate(models)
+      if ('associate' in models[modelName]) { models[modelName].associate(models) }
     })
   }
 
@@ -148,7 +155,7 @@ server.init = (options) => {
 
       // auth
       try {
-	if (config.auths) {
+        if (config.auths) {
           config.auths.forEach((auth) => {
             server.auth.scheme(auth[0], auth[1])
             server.auth.strategy(auth[0], auth[0], {
@@ -166,8 +173,6 @@ server.init = (options) => {
   })
 }
 
-module.exports = {
-  server,
-  models,
+export {
   logger,
 }

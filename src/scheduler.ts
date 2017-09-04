@@ -1,6 +1,6 @@
-const kue = require('kue-scheduler')
+import kue from 'kue-scheduler'
 
-const getScheduler = (config) => {
+export const getScheduler = (config) => {
   const redis = config.redis.url
   const jobs = kue.createQueue({
     redis,
@@ -39,8 +39,4 @@ const getScheduler = (config) => {
   })
 
   return schedule
-}
-
-module.exports = {
-  getScheduler,
 }
