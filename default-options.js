@@ -4,6 +4,10 @@ module.exports = {
    host: '0.0.0.0',
 	port: 3000,
   },
+  logger: {
+    level: 'silly',
+    colorize: true,
+  },
   modules: [],
   moduleFilenames: ['api', 'view', 'task'],
   modelFilenames: ['model'],

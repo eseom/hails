@@ -7,8 +7,17 @@ const Hoek = require('hoek')
 const Inert = require('inert')
 const Vision = require('vision')
 const Nes = require('nes')
-
+const winston = require('winston')
 const logger = require('./logger')
+
+const systemLogger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      colorize: true,
+      label: "system",
+    }),
+  ],
+})
 const { getScheduler } = require('./scheduler')
 const { setViewEngine } = require('./view')
 const defaultOptions = require('./default-options')
@@ -34,7 +43,7 @@ const getSequelizeInstance = (config) => {
       config.database.url = ''
     }
     if (!config.database) {
-      logger.error('options.database { url: string, options: object } is not exists.')
+      systemLogger.error('options.database { url: string, options: object } is not exists.')
       process.exit(1)
     }
     let url = ''
@@ -46,7 +55,7 @@ const getSequelizeInstance = (config) => {
       options = config.database.options
     }
     if (options.dialect) require(`./database/${options.dialect}`)
-    if (typeof options.logging === 'undefined') options.logging = logger.info
+    if (typeof options.logging === 'undefined') options.logging = systemLogger.info
     if (url) {
       sequelize = new Sequelize(url, options)
     } else {
@@ -57,8 +66,12 @@ const getSequelizeInstance = (config) => {
 }
 
 server.init = (options) => {
+  systemLogger.info('options initializing...')
   const config = Hoek.applyToDefaults(defaultOptions, options)
   server.config = config
+
+  // logger
+  logger.initLogger(config.logger || {})
 
   // server cache for session
   if (config.yar.engine.type === 'redis') {
@@ -102,7 +115,7 @@ server.init = (options) => {
             const importedModels = require(moduleFile)
             Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
           } catch (e) {
-            logger.error(e, e.stack)
+            systemLogger.error(e, e.stack)
             process.exit(-1)
           }
         } else {
@@ -175,7 +188,7 @@ server.init = (options) => {
           })
         }
       } catch (e) {
-        logger.error(e, e.stack)
+        systemLogger.error(e, e.stack)
       }
 
       modules.install()
@@ -187,5 +200,5 @@ server.init = (options) => {
 module.exports = {
   server,
   models,
-  logger,
+  logger: logger.instance,
 }

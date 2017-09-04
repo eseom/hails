@@ -1,9 +1,23 @@
 const winston = require('winston')
 
-const logger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)(),
-  ],
-})
+winston.setLevels(winston.config.syslog.levels);
 
-module.exports = logger
+let hailsLogger
+
+module.exports = {
+  instance: {
+    error: (...args) => { hailsLogger.error(...args) },
+    warn: (...args) => { hailsLogger.warn(...args) },
+    info: (...args) => { hailsLogger.info(...args) },
+    verbose: (...args) => { hailsLogger.verbose(...args) },
+    debug: (...args) => { hailsLogger.debug(...args) },
+    silly: (...args) => { hailsLogger.silly(...args) },
+  },
+  initLogger: (loggerConfig) => {
+    hailsLogger = new (winston.Logger)({
+      transports: [
+        new (winston.transports.Console)(loggerConfig),
+      ],
+    })
+  },
+}
