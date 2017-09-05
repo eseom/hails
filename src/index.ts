@@ -6,16 +6,28 @@ import * as Hoek from 'hoek'
 import * as Inert from 'inert'
 import * as Vision from 'vision'
 import * as Nes from 'nes'
+import * as winston from 'winston'
 
-import { logger } from './logger'
+import * as logger from './logger'
+
 import { getScheduler } from './scheduler'
 import { setViewEngine } from './view'
 import * as defaultOptions from './default-options'
 
 import { IServer, Configuration } from './types'
 
-export const server: IServer = new Hapi.Server()
-export const models = []
+const server: IServer = new Hapi.Server()
+const models = []
+
+const systemLogger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      colorize: true,
+      label: "system",
+    }),
+  ],
+})
+
 const modules = {
   list: [],
   files: [],
@@ -34,7 +46,7 @@ const getSequelizeInstance = (config) => {
       config.database.url = ''
     }
     if (!config.database) {
-      logger.error('options.database { url: string, options: object } is not exists.')
+      systemLogger.error('options.database { url: string, options: object } is not exists.')
       process.exit(1)
     }
     let url = ''
@@ -46,7 +58,7 @@ const getSequelizeInstance = (config) => {
       options = config.database.options
     }
     if (options.dialect) { require(`./database/${options.dialect}`) }
-    if (typeof options.logging === 'undefined') { options.logging = logger.info }
+    if (typeof options.logging === 'undefined') { options.logging = systemLogger.info }
     if (url) {
       sequelize = new Sequelize(url, options)
     } else {
@@ -60,24 +72,34 @@ const getSequelizeInstance = (config) => {
  * init
  */
 server.init = (options: Configuration) => {
+  systemLogger.info('options initializing...')
   const config = Hoek.applyToDefaults(defaultOptions, options)
   server.config = config
 
-  // register catbox redis
-  // const cacheOptions: Hapi.CatboxServerCacheConfiguration = {
-  const cacheOptions = {
-    engine: require('catbox-redis'),
-    name: 'session',
-    url: config.redis.url,
+  // logger
+  logger.initLogger(config.logger || {})
+
+  // server cache for session
+  if (config.yar.engine.type === 'redis') {
+    server.cache.provision({
+      engine: require('catbox-redis'),
+      name: 'session',
+      url: config.redis.url,
+    })
+  } else {
+    server.cache.provision({
+      engine: require('catbox-disk'),
+      name: 'session',
+      cachePath: config.yar.engine.cachePath,
+    })
   }
 
-  server.cache.provision(cacheOptions)
-
   // scheduler
-  server.scheduler = getScheduler(config)
+  server.scheduler = config.scheduler.enable ? getScheduler(config) : null
 
   // model
   server.sequelize = getSequelizeInstance(config)
+  server.DataTypes = DataTypes
 
   // modules
   const callerDir = Path.dirname(module.parent.filename)
@@ -95,10 +117,13 @@ server.init = (options: Configuration) => {
       }
       try {
         if (mod === 'model' && config.useSequelize) {
-          const importedModels = server.sequelize.import(moduleFile)
-          Object.keys(importedModels).forEach((it) => {
-            models[it] = importedModels[it]
-          })
+          try {
+            const importedModels = require(moduleFile)
+            Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
+          } catch (e) {
+            systemLogger.error(e, e.stack)
+            process.exit(-1)
+          }
         } else {
           modules.push(moduleName)
         }
@@ -119,9 +144,14 @@ server.init = (options: Configuration) => {
   config.swagger.info.version = config.version
 
   return new Promise((resolve, reject) => {
-    server.connection({
-      port: config.port,
-    })
+    server.connection(config.connection)
+
+    // yar optinos
+    config.yar.storeBlank = false
+    config.yar.maxCookieSize = 0 // use server side storage
+    config.yar.cache = {
+      cache: 'session',
+    }
 
     const plugins = [
       Inert,
@@ -164,7 +194,7 @@ server.init = (options: Configuration) => {
           })
         }
       } catch (e) {
-        logger.error(e, e.stack)
+        systemLogger.error(e, e.stack)
       }
 
       modules.install()
@@ -174,5 +204,7 @@ server.init = (options: Configuration) => {
 }
 
 export {
-  logger,
+  logger: logger.instance,
+  server,
+  models,
 }

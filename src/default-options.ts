@@ -1,12 +1,22 @@
 export default {
-  version: undefined,
-  port: 3000,
+  vesion: undefined,
+  connection: {
+   host: '0.0.0.0',
+	port: 3000,
+  },
+  logger: {
+    level: 'silly',
+    colorize: true,
+  },
   modules: [],
   moduleFilenames: ['api', 'view', 'task'],
   modelFilenames: ['model'],
-  useSequelize: true,
-  redis: {
-    url: 'redis://localhost:6379/0',
+  useSequelize: false,
+  viewEngine: {
+    type: 'nunjucks',
+  },
+  scheduler: {
+    enable: false,
   },
   swagger: {
     info: {
@@ -15,10 +25,9 @@ export default {
     grouping: 'tags',
   },
   yar: {
-    storeBlank: false,
-    maxCookieSize: 0, // use server side storage
-    cache: {
-      cache: 'session',
+    engine: {
+      type: 'disk',
+      cachePath: '/tmp',
     },
     cookieOptions: {
       password: 'the-password-must-be-at-least-32-characters-long',
