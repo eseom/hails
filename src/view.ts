@@ -1,8 +1,8 @@
 import { EngineConfigurationObject, ServerViewsConfiguration } from 'vision'
-import { IServer, ConfigurationObject } from './types'
+import { IServer, Configuration } from './types'
 import * as Path from 'path'
 
-export const setViewEngine = (server: IServer, config: ConfigurationObject, installedDirs: Array<string>) => {
+export const setViewEngine = (server: IServer, config: Configuration, installedDirs: Array<string>) => {
   if (!config.viewEngine) { return }
 
   const isCached: boolean = process.env.NODE_ENV === 'production'
@@ -26,9 +26,10 @@ export const setViewEngine = (server: IServer, config: ConfigurationObject, inst
         isCached: isCached,
         engines: {
           html: {
-            compile(src, options) {
+            // TODO options any
+            compile(src: string, options: any) {
               const template = Nunjucks.compile(src, options.environment)
-              return (context) => {
+              return (context: object) => {
                 return template.render(context)
               }
             },

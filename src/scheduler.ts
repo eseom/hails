@@ -1,13 +1,15 @@
-import kue from 'kue-scheduler'
+import * as kue from 'kue-scheduler'
+import { Scheduler } from './types'
+import { Configuration } from './types'
 
-export const getScheduler = (config) => {
+export default (config: Configuration): Scheduler => {
   const redis = config.scheduler.broker.redis
-  const jobs = kue.createQueue({
+  const queue: kue.Queue = kue.createQueue({
     redis,
   })
 
   // get schedules from config
-  let schedules = []
+  let schedules: Array<Array<string>> = []
   try {
     schedules = config.scheduler.schedules
   } catch (e) {
@@ -16,12 +18,12 @@ export const getScheduler = (config) => {
   schedules = schedules || []
 
   // make scheduler
-  const scheduler = {
-    register(name, callback) {
-      return jobs.process(name, 10, callback)
+  const scheduler: Scheduler = {
+    register(name: string, callback: (args?: any) => void) {
+      return queue.process(name, 10, callback)
     },
-    now(name, options) {
-      return jobs.createJob(name, options)
+    now(name: string, options: object) {
+      return queue.createJob(name, options)
         .removeOnComplete(true)
         .delay(0)
         .save()
@@ -29,12 +31,13 @@ export const getScheduler = (config) => {
   }
 
   // initialize
-  jobs.clear((err, response) => {
+  queue.clear((err: Error) => {
     schedules.forEach((sche) => {
-      const job = jobs.createJob(sche[1], {})
-        .removeOnComplete(true)
+      const job: kue.Job = (
+        <kue.Job>(queue.createJob(sche[1], {}).removeOnComplete(true))
+      )
         .unique(sche[1])
-      jobs.every(sche[0], job)
+      queue.every(sche[0], job)
     })
   })
 

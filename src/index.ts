@@ -1,4 +1,3 @@
-import * as Sequelize from 'sequelize'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Hapi from 'hapi'
@@ -8,16 +7,21 @@ import * as Vision from 'vision'
 import * as Nes from 'nes'
 import * as winston from 'winston'
 
-import * as logger from './logger'
+import { initLogger, instance } from './logger'
 
-import { getScheduler } from './scheduler'
+import getScheduler from './scheduler'
 import { setViewEngine } from './view'
-import * as defaultOptions from './default-options'
+import defaultOptions from './default-options'
+import { getSequelizeInstance } from './sequelize'
 
 import { IServer, Configuration } from './types'
 
+export interface Models {
+  [key: string]: any
+}
+
 const server: IServer = new Hapi.Server()
-const models = []
+const models: Models = {} // ObjectArray<Sequelize.Instance<string>> = []
 
 const systemLogger = new (winston.Logger)({
   transports: [
@@ -28,7 +32,14 @@ const systemLogger = new (winston.Logger)({
   ],
 })
 
-const modules = {
+export type ModulesContainer = {
+  list: Array<string>
+  files: Array<string>
+  push: (item: string) => void
+  install: () => void
+}
+
+const modules: ModulesContainer = {
   list: [],
   files: [],
   push: (item) => {
@@ -37,35 +48,6 @@ const modules = {
   install: () => {
     modules.files.forEach(it => require(it))
   },
-}
-
-const getSequelizeInstance = (config) => {
-  let sequelize
-  if (config.useSequelize) {
-    if (!config.database.url) {
-      config.database.url = ''
-    }
-    if (!config.database) {
-      systemLogger.error('options.database { url: string, options: object } is not exists.')
-      process.exit(1)
-    }
-    let url = ''
-    let options: Sequelize.Options
-    if (!config.database.url) {
-      options = config.database
-    } else {
-      url = config.database.url
-      options = config.database.options
-    }
-    if (options.dialect) { require(`./database/${options.dialect}`) }
-    if (typeof options.logging === 'undefined') { options.logging = systemLogger.info }
-    if (url) {
-      sequelize = new Sequelize(url, options)
-    } else {
-      sequelize = new Sequelize(undefined, options)
-    }
-  }
-  return sequelize
 }
 
 /**
@@ -77,29 +59,31 @@ server.init = (options: Configuration) => {
   server.config = config
 
   // logger
-  logger.initLogger(config.logger || {})
+  initLogger(config.logger || {})
 
   // server cache for session
+  let catboxConfig: Hapi.CatboxServerCacheConfiguration
   if (config.yar.engine.type === 'redis') {
-    server.cache.provision({
+    catboxConfig = {
       engine: require('catbox-redis'),
       name: 'session',
       url: config.redis.url,
-    })
+    }
   } else {
-    server.cache.provision({
+    catboxConfig = {
       engine: require('catbox-disk'),
       name: 'session',
       cachePath: config.yar.engine.cachePath,
-    })
+    }
   }
+  server.cache.provision(catboxConfig)
 
   // scheduler
   server.scheduler = config.scheduler.enable ? getScheduler(config) : null
 
   // model
-  server.sequelize = getSequelizeInstance(config)
-  server.DataTypes = DataTypes
+  server.sequelize = getSequelizeInstance(systemLogger, config)
+  // server.DataTypes = SequelizeStatic.DataTypes
 
   // modules
   const callerDir = Path.dirname(module.parent.filename)
@@ -119,7 +103,7 @@ server.init = (options: Configuration) => {
         if (mod === 'model' && config.useSequelize) {
           try {
             const importedModels = require(moduleFile)
-            Object.keys(importedModels).forEach((it) => { models[it] = importedModels[it] })
+            Object.keys(importedModels).forEach((key: string) => { models[key] = importedModels[key] })
           } catch (e) {
             systemLogger.error(e, e.stack)
             process.exit(-1)
@@ -135,8 +119,10 @@ server.init = (options: Configuration) => {
 
   // intiialize models
   if (config.useSequelize) {
-    Object.keys(models).forEach((modelName) => {
-      if ('associate' in models[modelName]) { models[modelName].associate(models) }
+    Object.keys(models).forEach((modelName: string) => {
+      if (models[modelName].associate) {
+        models[modelName].associate(models)
+      }
     })
   }
 
@@ -204,7 +190,7 @@ server.init = (options: Configuration) => {
 }
 
 export {
-  logger: logger.instance,
+  instance as logger,
   server,
   models,
 }
