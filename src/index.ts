@@ -83,6 +83,7 @@ server.init = (options: Configuration) => {
 
   // model
   server.sequelize = getSequelizeInstance(systemLogger, config)
+  console.log('----', server.sequelize)
   // server.DataTypes = SequelizeStatic.DataTypes
 
   // modules

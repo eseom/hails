@@ -2,7 +2,7 @@ import * as Sequelize from 'sequelize'
 import * as winston from 'winston'
 import { Configuration, CustomDatabaseOptions, DatabaseOptions } from './types'
 
-export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Configuration) => {
+export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Configuration): Sequelize.Sequelize => {
   let sequelize
   if (config.useSequelize) {
     if (!(<CustomDatabaseOptions>config.database).uri) {

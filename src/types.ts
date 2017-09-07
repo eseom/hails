@@ -25,13 +25,6 @@ export interface IServer extends Hapi.Server {
   DataTypes?: DataTypes
 }
 
-// export interface ConfigurationObject {
-//   viewEngine: {
-//     type: string,
-//   }
-//   views: () => {}
-// }
-
 export interface CustomDatabaseOptions {
   uri?: string,
   options?: SequelizeStatic.Options
@@ -41,6 +34,7 @@ export type DatabaseOptions = CustomDatabaseOptions | SequelizeStatic.Options
 
 export interface Configuration {
   version?: string
+  modules?: Array<string>,
   connection?: Hapi.ServerConnectionOptions,
   redis?: {
     url?: string
