@@ -19,10 +19,10 @@ export default (config: Configuration): Scheduler => {
 
   // make scheduler
   const scheduler: Scheduler = {
-    register(name: string, callback: (args?: any) => void) {
+    register(name, callback) {
       return queue.process(name, 10, callback)
     },
-    now(name: string, options: object) {
+    now(name, options) {
       return queue.createJob(name, options)
         .removeOnComplete(true)
         .delay(0)

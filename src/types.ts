@@ -8,9 +8,10 @@ declare module 'hapi' {
 import * as SequelizeStatic from 'sequelize'
 import { DataTypes } from 'sequelize'
 import * as Hapi from 'hapi'
+import * as kue from 'kue'
 
 export interface Scheduler {
-  register: (name: string, callback: (args?: any) => void) => void
+  register: (name: string, callback: (job: kue.Job, done: () => void) => void) => void
   now: (name: string, options: object) => void
 }
 
@@ -57,6 +58,7 @@ export interface Configuration {
     type?: string,
   }
   scheduler?: {
+    enable?: boolean,
     broker?: {
       redis?: string
     }
