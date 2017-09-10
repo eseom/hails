@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
@@ -14,7 +14,9 @@
   "typings": "lib/index.d.ts",
   "files": [
     "lib/*.js",
-    "lib/database/*.js"
+    "lib/*.d.ts",
+    "lib/database/*.js",
+    "lib/database/*.d.ts"
   ],
   "repository": {
     "type": "git",
