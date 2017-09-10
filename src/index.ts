@@ -6,6 +6,7 @@ import * as Inert from 'inert'
 import * as Vision from 'vision'
 import * as Nes from 'nes'
 import * as winston from 'winston'
+import * as sequelize from 'sequelize'
 
 import { initLogger, instance } from './logger'
 
@@ -21,7 +22,7 @@ export interface Models {
 }
 
 const server: IServer = new Hapi.Server()
-const models: Models = {} // ObjectArray<Sequelize.Instance<string>> = []
+let models: Models = {} // ObjectArray<Sequelize.Instance<string>> = []
 
 const systemLogger = new (winston.Logger)({
   transports: [
@@ -82,7 +83,9 @@ server.init = (options: Configuration) => {
   server.scheduler = config.scheduler.enable ? getScheduler(config) : null
 
   // model
-  server.sequelize = getSequelizeInstance(systemLogger, config)
+  if (config.useSequelize) {
+    server.sequelize = getSequelizeInstance(systemLogger, config)
+  }
   // server.DataTypes = SequelizeStatic.DataTypes
 
   // modules
@@ -102,8 +105,7 @@ server.init = (options: Configuration) => {
       try {
         if (mod === 'model' && config.useSequelize) {
           try {
-            const importedModels = require(moduleFile)
-            Object.keys(importedModels).forEach((key: string) => { models[key] = importedModels[key] })
+            models = { ...models, ...(server.sequelize.import(moduleFile)) }
           } catch (e) {
             systemLogger.error(e, e.stack)
             process.exit(-1)
@@ -116,6 +118,7 @@ server.init = (options: Configuration) => {
       }
     })
   })
+
 
   // intiialize models
   if (config.useSequelize) {

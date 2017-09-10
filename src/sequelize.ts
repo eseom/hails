@@ -5,25 +5,25 @@ import { Configuration, CustomDatabaseOptions, DatabaseOptions } from './types'
 export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Configuration): Sequelize.Sequelize => {
   let sequelize
   if (config.useSequelize) {
-    if (!(<CustomDatabaseOptions>config.database).uri) {
-      (<CustomDatabaseOptions>config.database).uri = ''
+    if (!(<CustomDatabaseOptions>config.database).url) {
+      (<CustomDatabaseOptions>config.database).url = ''
     }
     if (!config.database) {
-      logger.error('options.database { uri: string, options: object } is not exists.')
+      logger.error('options.database { url: string, options: object } is not exists.')
       process.exit(1)
     }
-    let uri = ''
+    let url = ''
     let options: Sequelize.Options
-    if (!(<CustomDatabaseOptions>config.database).uri) {
+    if (!(<CustomDatabaseOptions>config.database).url) {
       options = config.database as any // TODO
     } else {
-      uri = (<CustomDatabaseOptions>config.database).uri
+      url = (<CustomDatabaseOptions>config.database).url
       options = (<CustomDatabaseOptions>config.database).options
     }
     if (options.dialect) { require(`./database/${options.dialect}`) }
     if (typeof options.logging === 'undefined') { options.logging = logger.silly }
-    if (uri) {
-      sequelize = new Sequelize(uri, options)
+    if (url) {
+      sequelize = new Sequelize(url, options)
     } else {
       // TODO username, password
       sequelize = new Sequelize('', '', options)

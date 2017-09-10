@@ -27,7 +27,7 @@ export interface IServer extends Hapi.Server {
 }
 
 export interface CustomDatabaseOptions {
-  uri?: string,
+  url?: string,
   options?: SequelizeStatic.Options
 }
 
