@@ -1,11 +1,12 @@
 {
   "name": "hails",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
     "watch": "tsc --watch",
-    "lint": "tslint src/*"
+    "lint": "tslint src/*",
+    "prepublish": "tsc"
   },
   "bin": {
     "hails": "bin/hails"
