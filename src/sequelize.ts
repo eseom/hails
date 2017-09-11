@@ -31,3 +31,5 @@ export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Con
   }
   return sequelize
 }
+
+export const getSequelizeDataTypes = () => (Sequelize)

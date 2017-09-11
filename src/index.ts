@@ -8,12 +8,12 @@ import * as Nes from 'nes'
 import * as winston from 'winston'
 import * as sequelize from 'sequelize'
 
-import { initLogger, instance } from './logger'
+import { initLogger, instance, systemLogger } from './logger'
 
 import getScheduler from './scheduler'
 import { setViewEngine } from './view'
 import defaultOptions from './default-options'
-import { getSequelizeInstance } from './sequelize'
+import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
 
 import { IServer, Configuration } from './types'
 
@@ -23,15 +23,6 @@ export interface Models {
 
 const server: IServer = new Hapi.Server()
 let models: Models = {} // ObjectArray<Sequelize.Instance<string>> = []
-
-const systemLogger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({
-      colorize: true,
-      label: "system",
-    }),
-  ],
-})
 
 export type ModulesContainer = {
   list: Array<string>
@@ -85,6 +76,7 @@ server.init = (options: Configuration) => {
   // model
   if (config.useSequelize) {
     server.sequelize = getSequelizeInstance(systemLogger, config)
+    server.DataTypes = getSequelizeDataTypes()
   }
   // server.DataTypes = SequelizeStatic.DataTypes
 
@@ -105,7 +97,7 @@ server.init = (options: Configuration) => {
       try {
         if (mod === 'model' && config.useSequelize) {
           try {
-            models = { ...models, ...(server.sequelize.import(moduleFile)) }
+            models = { ...models, ...(require(moduleFile)) }
           } catch (e) {
             systemLogger.error(e, e.stack)
             process.exit(-1)

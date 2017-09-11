@@ -32,3 +32,12 @@ export const initLogger = (loggerConfig: LoggerConfig) => {
     ],
   })
 }
+
+export const systemLogger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      colorize: true,
+      label: "system",
+    }),
+  ],
+})

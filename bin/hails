@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const spawn = require('child_process').spawn
-const logger = require('../logger')
+const { systemLogger } = require('../lib/logger')
 
 const command = process.argv[2]
 const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
@@ -10,10 +10,10 @@ const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
 const execSequelize = (c) => {
   const call = spawn(sequelizeCli, [c])
   call.stdout.on('data', (data) => {
-    logger.info(data.toString().trim())
+    systemLogger.info(data.toString().trim())
   })
   call.stderr.on('data', (data) => {
-    logger.error(data.toString().trim())
+    systemLogger.error(data.toString().trim())
   })
 }
 
