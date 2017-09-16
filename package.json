@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
@@ -16,7 +16,8 @@
     "lib/*.js",
     "lib/*.d.ts",
     "lib/database/*.js",
-    "lib/database/*.d.ts"
+    "lib/database/*.d.ts",
+    "bin/hails"
   ],
   "repository": {
     "type": "git",
@@ -29,8 +30,9 @@
     "@types/kue": "^0.11.6",
     "@types/nes": "^6.2.8",
     "@types/node": "^7.0.22",
+    "@types/nunjucks": "^0.0.33",
     "@types/pg": "^7.1.0",
-    "@types/sequelize": "^4.0.55",
+    "@types/sequelize": "3.30.4",
     "@types/vision": "^4.1.0",
     "@types/winston": "^2.3.2",
     "catbox-disk": "^2.0.9",
@@ -39,12 +41,12 @@
     "hapi-es7-async-handler": "^1.0.10",
     "hapi-swagger": "^7.7.0",
     "inert": "^4.2.0",
-    "kue-scheduler": "^0.7.2",
+    "kue-scheduler": "^0.7.4",
     "mysql": "^2.13.0",
     "nes": "^6.4.2",
     "nunjucks": "^3.0.0",
     "pg": "^6.1.5",
-    "sequelize": "^3.30.4",
+    "sequelize": "3.30.4",
     "sequelize-cli": "^2.7.0",
     "sqlite3": "^3.1.8",
     "vision": "^4.1.1",
@@ -53,6 +55,6 @@
   },
   "devDependencies": {
     "tslint": "^5.3.2",
-    "typescript": "^2.3.3"
+    "typescript": "^2.5.2"
   }
 }

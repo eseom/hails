@@ -1,29 +1,46 @@
-declare module 'hapi' {
-  interface CatboxServerCacheConfiguration {
-    url?: string
-    cachePath?: string
-  }
-}
-
 import * as SequelizeStatic from 'sequelize'
 import { DataTypes } from 'sequelize'
+import * as Vision from 'vision'
 import * as Hapi from 'hapi'
 import * as kue from 'kue'
-
-export interface Scheduler {
-  register: (name: string, callback: (job: kue.Job, done: () => void) => void) => void
-  now: (name: string, options: object) => void
-}
 
 export interface IServer extends Hapi.Server {
   /**
    * initialize hails server
    */
-  init?: (options: Configuration) => Promise<() => {}>
+  init?: (options: Configuration) => Promise<{}>
+  /**
+   * hails config
+   */
   config?: Object
+  /**
+   * scheduler interface
+   */
   scheduler?: Scheduler
+  /**
+   * sequelize Sequelize
+   */
   sequelize?: SequelizeStatic.Sequelize
+  /**
+   * sequelize DataTypes
+   */
   DataTypes?: DataTypes
+}
+
+export type ModulesContainer = {
+  list: Array<string>
+  files: Array<string>
+  push: (item: string) => void
+  install: () => void
+}
+
+export interface Models {
+  [key: string]: any
+}
+
+export interface Scheduler {
+  register: (name: string, callback: (job: kue.Job, done: () => void) => void) => void
+  now: (name: string, options: object) => void
 }
 
 export interface CustomDatabaseOptions {

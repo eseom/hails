@@ -26,7 +26,7 @@ export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Con
       sequelize = new Sequelize(url, options)
     } else {
       // TODO username, password
-      sequelize = new Sequelize('', '', options)
+      sequelize = new Sequelize('', '', '', options)
     }
   }
   return sequelize

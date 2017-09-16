@@ -1,191 +1,201 @@
 import * as Fs from 'fs'
 import * as Path from 'path'
-import * as Hapi from 'hapi'
 import * as Hoek from 'hoek'
-import * as Inert from 'inert'
+import * as Hapi from 'hapi'
 import * as Vision from 'vision'
+import * as Inert from 'inert'
 import * as Nes from 'nes'
-import * as winston from 'winston'
-import * as sequelize from 'sequelize'
-
-import { initLogger, instance, systemLogger } from './logger'
+import * as SequelizeStatic from 'sequelize'
 
 import getScheduler from './scheduler'
-import { setViewEngine } from './view'
 import defaultOptions from './default-options'
+import { DataTypes } from 'sequelize'
+import { ModulesContainer, IServer, Scheduler, Configuration } from './types'
+import { initLogger, instance, systemLogger } from './logger'
 import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
+import { setViewEngine } from './view'
 
-import { IServer, Configuration } from './types'
+export class Server extends Hapi.Server implements IServer {
 
-export interface Models {
-  [key: string]: any
-}
+  /**
+   * hails configuration
+   */
+  private models: any
 
-const server: IServer = new Hapi.Server()
-let models: Models = {} // ObjectArray<Sequelize.Instance<string>> = []
+  config: Object
+  scheduler: Scheduler
+  sequelize: SequelizeStatic.Sequelize
+  DataTypes: SequelizeStatic.DataTypes
 
-export type ModulesContainer = {
-  list: Array<string>
-  files: Array<string>
-  push: (item: string) => void
-  install: () => void
-}
-
-const modules: ModulesContainer = {
-  list: [],
-  files: [],
-  push: (item) => {
-    modules.files.push(item)
-  },
-  install: () => {
-    modules.files.forEach(it => require(it))
-  },
-}
-
-/**
- * init
- */
-server.init = (options: Configuration) => {
-  systemLogger.info('options initializing...')
-  const config = Hoek.applyToDefaults(defaultOptions, options)
-  server.config = config
-
-  // logger
-  initLogger(config.logger || {})
-
-  // server cache for session
-  let catboxConfig: Hapi.CatboxServerCacheConfiguration
-  if (config.yar.engine.type === 'redis') {
-    catboxConfig = {
-      engine: require('catbox-redis'),
-      name: 'session',
-      url: config.redis.url,
-    }
-  } else {
-    catboxConfig = {
-      engine: require('catbox-disk'),
-      name: 'session',
-      cachePath: config.yar.engine.cachePath,
-    }
+  /**
+   * divided modules container
+   */
+  private modules: ModulesContainer = {
+    list: [],
+    files: [],
+    push: (item) => {
+      this.modules.files.push(item)
+    },
+    install: () => {
+      this.modules.files.forEach(it => require(it))
+    },
   }
-  server.cache.provision(catboxConfig)
 
-  // scheduler
-  server.scheduler = config.scheduler.enable ? getScheduler(config) : null
-
-  // model
-  if (config.useSequelize) {
-    server.sequelize = getSequelizeInstance(systemLogger, config)
-    server.DataTypes = getSequelizeDataTypes()
+  public getModels() {
+    return this.models
   }
-  // server.DataTypes = SequelizeStatic.DataTypes
 
-  // modules
-  const callerDir = Path.dirname(module.parent.filename)
-  const allFiles = config.moduleFilenames.concat(config.modelFilenames)
+  public init(options: Configuration) {
+    systemLogger.info('options initializing...')
+    const config = Hoek.applyToDefaults(defaultOptions, options)
+    this.config = config
 
-  modules.list = config.modules.map(m => Path.join(callerDir, m))
-  config.modules.forEach((m) => {
-    allFiles.forEach((mod) => {
-      const moduleName = Path.join(callerDir, m, mod)
-      const moduleFile = `${moduleName}.js`
-      try {
-        Fs.statSync(moduleFile)
-      } catch (e) {
-        return
+    // logger
+    initLogger(config.logger || {})
+
+    // server cache for session
+    let catboxConfig: Hapi.CatboxServerCacheConfiguration
+    if (config.yar.engine.type === 'redis') {
+      catboxConfig = {
+        engine: require('catbox-redis'),
+        name: 'session',
+        url: config.redis.url,
       }
-      try {
-        if (mod === 'model' && config.useSequelize) {
+    } else {
+      catboxConfig = {
+        engine: require('catbox-disk'),
+        name: 'session',
+        cachePath: config.yar.engine.cachePath,
+      }
+    }
+    this.cache.provision(catboxConfig)
+
+    // scheduler
+    this.scheduler = config.scheduler.enable ? getScheduler(config) : null
+
+    // model
+    if (config.useSequelize) {
+      this.sequelize = getSequelizeInstance(systemLogger, config)
+      this.DataTypes = getSequelizeDataTypes()
+    }
+    // this.DataTypes = SequelizeStatic.DataTypes
+
+    // modules
+    const callerDir = Path.dirname(module.parent.filename)
+    const allFiles = config.moduleFilenames.concat(config.modelFilenames)
+
+    this.modules.list = config.modules.map(m => Path.join(callerDir, m))
+    config.modules.forEach((m) => {
+      allFiles.forEach((mod) => {
+        const moduleName = Path.join(callerDir, m, mod)
+        const moduleFile = `${moduleName}`
+        try {
+          Fs.statSync(`${moduleFile}.js`)
+        } catch (e) {
           try {
-            models = { ...models, ...(require(moduleFile)) }
+            Fs.statSync(`${moduleFile}.ts`)
           } catch (e) {
-            systemLogger.error(e, e.stack)
-            process.exit(-1)
+            return
           }
-        } else {
-          modules.push(moduleName)
         }
-      } catch (e) {
-        console.error(e)
-      }
+        try {
+          if (mod === 'model') {
+            if (config.useSequelize) {
+              try {
+                this.models = { ...this.models, ...(require(moduleFile)) }
+              } catch (e) {
+                systemLogger.error(e, e.stack)
+                process.exit(-1)
+              }
+            }
+          } else {
+            this.modules.push(moduleName)
+          }
+        } catch (e) {
+          console.error(e)
+        }
+      })
     })
-  })
 
-
-  // intiialize models
-  if (config.useSequelize) {
-    Object.keys(models).forEach((modelName: string) => {
-      if (models[modelName].associate) {
-        models[modelName].associate(models)
-      }
-    })
-  }
-
-  // remap swagger version
-  config.swagger.info.version = config.version
-
-  return new Promise((resolve, reject) => {
-    server.connection(config.connection)
-
-    // yar optinos
-    config.yar.storeBlank = false
-    config.yar.maxCookieSize = 0 // use server side storage
-    config.yar.cache = {
-      cache: 'session',
+    // intiialize models
+    if (config.useSequelize) {
+      Object.keys(this.models).forEach((modelName: string) => {
+        if (this.models[modelName].associate) {
+          this.models[modelName].associate(this.models)
+        }
+      })
     }
 
-    const plugins = [
-      Inert,
-      Vision,
-      {
-        register: require('yar'),
-        options: config.yar,
-      },
-      {
-        register: require('hapi-es7-async-handler'),
-        options: {
-          server,
+    // remap swagger version
+    config.swagger.info.version = config.version
+
+    return new Promise((resolve, reject) => {
+      this.connection(config.connection)
+
+      // yar optinos
+      config.yar.storeBlank = false
+      config.yar.maxCookieSize = 0 // use server side storage
+      config.yar.cache = {
+        cache: 'session',
+      }
+
+      const plugins = [
+        Inert,
+        Vision,
+        {
+          register: require('yar'),
+          options: config.yar,
         },
-      },
-      {
-        register: require('hapi-swagger'),
-        options: config.swagger,
-      },
-      Nes,
-      ...(config.plugins || []),
-    ]
+        {
+          register: require('hapi-es7-async-handler'),
+          options: {
+            server: this,
+          },
+        },
+        {
+          register: require('hapi-swagger'),
+          options: config.swagger,
+        },
+        Nes,
+        ...(config.plugins || []),
+      ]
 
-    server.register(plugins, (err) => {
-      if (err) {
-        reject(err)
-        return
-      }
-
-      // view
-      setViewEngine(server, config, modules.list)
-
-      // auth
-      try {
-        if (config.auths) {
-          config.auths.forEach((auth) => {
-            server.auth.scheme(auth[0], auth[1])
-            server.auth.strategy(auth[0], auth[0], {
-              validateFunc: () => { },
-            })
-          })
+      this.register(plugins, (err) => {
+        if (err) {
+          reject(err)
+          return
         }
-      } catch (e) {
-        systemLogger.error(e, e.stack)
-      }
 
-      modules.install()
-      resolve(() => server.start())
+        // view
+        setViewEngine(this, config, this.modules.list)
+
+        // auth
+        try {
+          if (config.auths) {
+            config.auths.forEach((auth) => {
+              this.auth.scheme(auth[0], auth[1])
+              this.auth.strategy(auth[0], auth[0], {
+                validateFunc: () => { },
+              })
+            })
+          }
+        } catch (e) {
+          systemLogger.error(e, e.stack)
+        }
+
+        this.modules.install()
+        resolve(() => this.start())
+      })
     })
-  })
+
+  }
 }
+
+const server = new Server()
+const models = server.getModels()
 
 export {
   instance as logger,
   server,
-  models,
+  models
 }

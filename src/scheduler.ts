@@ -3,6 +3,7 @@ import { Scheduler } from './types'
 import { Configuration } from './types'
 
 export default (config: Configuration): Scheduler => {
+  console.log(39843948)
   const redis = config.scheduler.broker.redis
   const queue: kue.Queue = kue.createQueue({
     redis,
@@ -33,6 +34,7 @@ export default (config: Configuration): Scheduler => {
   // initialize
   queue.clear((err: Error) => {
     schedules.forEach((sche) => {
+      console.log(sche)
       const job: kue.Job = (
         <kue.Job>(queue.createJob(sche[1], {}).removeOnComplete(true))
       )
