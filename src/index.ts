@@ -15,12 +15,19 @@ import { initLogger, instance, systemLogger } from './logger'
 import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
 import { setViewEngine } from './view'
 
+// TODO bad situation
+let models: {
+  // TODO explicit any
+  [key: string]: any
+} = {}
+
+
 export class Server extends Hapi.Server implements IServer {
 
   /**
    * hails configuration
    */
-  private models: any
+  // private models: any
 
   config: Object
   scheduler: Scheduler
@@ -39,10 +46,6 @@ export class Server extends Hapi.Server implements IServer {
     install: () => {
       this.modules.files.forEach(it => require(it))
     },
-  }
-
-  public getModels() {
-    return this.models
   }
 
   public init(options: Configuration) {
@@ -102,7 +105,7 @@ export class Server extends Hapi.Server implements IServer {
           if (mod === 'model') {
             if (config.useSequelize) {
               try {
-                this.models = { ...this.models, ...(require(moduleFile)) }
+                models = { ...models, ...(require(moduleFile)) }
               } catch (e) {
                 systemLogger.error(e, e.stack)
                 process.exit(-1)
@@ -119,9 +122,9 @@ export class Server extends Hapi.Server implements IServer {
 
     // intiialize models
     if (config.useSequelize) {
-      Object.keys(this.models).forEach((modelName: string) => {
-        if (this.models[modelName].associate) {
-          this.models[modelName].associate(this.models)
+      Object.keys(models).forEach((modelName: string) => {
+        if (models[modelName].associate) {
+          models[modelName].associate(models)
         }
       })
     }
@@ -184,18 +187,17 @@ export class Server extends Hapi.Server implements IServer {
         }
 
         this.modules.install()
-        resolve(() => this.start())
+        resolve(() => {
+          this.start()
+        })
       })
     })
 
   }
 }
 
-const server = new Server()
-const models = server.getModels()
-
+export const server = new Server()
 export {
   instance as logger,
-  server,
-  models
+  models,
 }
