@@ -1,15 +1,13 @@
 import * as kue from 'kue-scheduler'
-import { Scheduler } from './types'
-import { Configuration } from './types'
 
-export default (config: Configuration): Scheduler => {
+export default (config, logger) => {
   const redis = config.scheduler.broker.redis
-  const queue: kue.Queue = kue.createQueue({
+  const queue = kue.createQueue({
     redis,
   })
 
   // get schedules from config
-  let schedules: Array<Array<string>> = []
+  let schedules = []
   try {
     schedules = config.scheduler.schedules
   } catch (e) {
@@ -18,7 +16,7 @@ export default (config: Configuration): Scheduler => {
   schedules = schedules || []
 
   // make scheduler
-  const scheduler: Scheduler = {
+  const scheduler = {
     register(name, callback) {
       return queue.process(name, 10, callback)
     },
@@ -28,19 +26,26 @@ export default (config: Configuration): Scheduler => {
         .delay(0)
         .save()
     },
+    stop() {
+      return new Promise((resolve) => {
+        queue.shutdown(10000, () => {
+          resolve(true)
+        })
+      })
+    },
   }
 
   // initialize
-  queue.clear((err: Error) => {
+  queue.clear(() => {
+    logger.info('periodic schedules: %d', schedules.length)
     schedules.forEach((sche) => {
-      console.log(sche)
-      const job: kue.Job = (
-        <kue.Job>(queue.createJob(sche[1], {}).removeOnComplete(true))
+      logger.silly(sche)
+      const job = (
+        queue.createJob(sche[1], {}).removeOnComplete(true)
       )
         .unique(sche[1])
       queue.every(sche[0], job)
     })
   })
-
   return scheduler
 }

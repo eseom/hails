@@ -1,4 +1,5 @@
 export default {
+  context: undefined,
   vesion: undefined,
   connection: {
     host: '0.0.0.0',
@@ -9,7 +10,7 @@ export default {
     colorize: true,
   },
   modules: [],
-  moduleFilenames: ['api', 'view', 'task'],
+  moduleFilenames: ['api', 'method', 'view', 'task'],
   modelFilenames: ['model'],
   useSequelize: false,
   viewEngine: {
@@ -33,5 +34,5 @@ export default {
       password: 'the-password-must-be-at-least-32-characters-long',
       isSecure: false,
     },
-  }
+  },
 }
