@@ -4,6 +4,7 @@ export default (config, logger) => {
   const redis = config.scheduler.broker.redis
   const queue = kue.createQueue({
     redis,
+    jobEvents: false,
   })
 
   // get schedules from config
@@ -28,9 +29,14 @@ export default (config, logger) => {
     },
     stop() {
       return new Promise((resolve) => {
-        queue.shutdown(10000, () => {
-          resolve(true)
-        })
+        try {
+          queue.shutdown(10000, () => {
+            resolve(true)
+          })
+        } catch (e) {
+          console.error(e)
+          //
+        }
       })
     },
   }

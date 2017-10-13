@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "main": "index.js",
   "license": "MIT",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "babel src -d lib",
+    "watch": "babel src -d lib --watch",
     "lint": "eslint src/*",
     "prepublish": "yarn build"
   },
