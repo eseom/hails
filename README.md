@@ -2,10 +2,39 @@
 
 hapi based web stack with sequelize, kuejs, etc.
 
-# sample code
-[hails-sample](https://github.com/eseom/hails-sample)
-
 # get started
+
+```bash
+mkdir my-project
+cd $_
+yarn add hails
+mkdir -p src/core
+
+# settings.js
+echo "module.exports = {
+  development: {
+    context: './src',
+    modules: [
+      'core',
+    ],
+  },
+}" > settings.js
+
+# src/core/api.js
+echo "export default () => [{
+  method: 'GET',
+  path: '/',
+  handler(request, reply) {
+    reply('hello world')
+  },
+}]" > src/core/api.js
+
+# that's all, run a server.
+yarn hails run
+# open http://localhost:3000
+```
+
+# sample code
 ```
 git clone https://github.com/eseom/hails-sample <project name>
 cd <project name>
