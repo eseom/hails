@@ -169,7 +169,8 @@ export class Server extends Hapi.Server {
     // include auth
     const auths = (() => {
       try {
-        return require(Path.join(Path.resolve(config.context), 'auth.js')).default
+        const authImported = require(Path.join(Path.resolve(config.context), 'auth.js')).default
+        return authImported({ server: this })
       } catch (e) {
         return []
       }
