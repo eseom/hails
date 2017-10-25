@@ -166,6 +166,41 @@ export class Server extends Hapi.Server {
     // remap swagger version
     config.swagger.info.version = config.version
 
+    // include auth
+    const auths = (() => {
+      try {
+        return require(Path.join(Path.resolve(config.context), 'auth.js')).default
+      } catch (e) {
+        return []
+      }
+    })()
+
+    // include plugins
+    const plugins = [
+      Inert,
+      Vision,
+      {
+        register: require('hapi-es7-async-handler'),
+      },
+      {
+        register: require('yar'),
+        options: config.yar,
+      },
+      {
+        register: require('hapi-swagger'),
+        options: config.swagger,
+      },
+      Blipp,
+      Nes,
+      ...((() => {
+        try {
+          return require(Path.join(Path.resolve(config.context), 'plugin.js')).default
+        } catch (e) {
+          return []
+        }
+      })()),
+    ]
+
     return new Promise((resolve, reject) => {
       this.connection(config.connection)
 
@@ -175,25 +210,6 @@ export class Server extends Hapi.Server {
       config.yar.cache = {
         cache: 'session',
       }
-
-      const plugins = [
-        Inert,
-        Vision,
-        {
-          register: require('hapi-es7-async-handler'),
-        },
-        {
-          register: require('yar'),
-          options: config.yar,
-        },
-        {
-          register: require('hapi-swagger'),
-          options: config.swagger,
-        },
-        Blipp,
-        Nes,
-        ...(config.plugins || []),
-      ]
 
       this.register(plugins, (err) => {
         if (err) {
@@ -206,8 +222,8 @@ export class Server extends Hapi.Server {
 
         // auth
         try {
-          if (config.auths) {
-            config.auths.forEach((auth) => {
+          if (auths) {
+            auths.forEach((auth) => {
               this.auth.scheme(auth[0], auth[1])
               this.auth.strategy(auth[0], auth[0], {
                 validateFunc: () => { },

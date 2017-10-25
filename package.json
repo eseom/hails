@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "main": "index.js",
   "license": "MIT",
   "bin": {
@@ -48,6 +48,7 @@
     "nes": "^6.4.3",
     "nunjucks": "^3.0.1",
     "pg": "^7.3.0",
+    "pg-native": "^2.2.0",
     "sequelize": "^4.13.5",
     "sequelize-cli": "^3.0.0",
     "sqlite3": "^3.1.13",
