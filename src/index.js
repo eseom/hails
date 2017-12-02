@@ -49,6 +49,7 @@ export class Server extends Hapi.Server {
       models: [],
       tasks: [],
       apis: [],
+      apps: [],
       methods: [],
       install: () => {
         this.modules.methods.forEach((methodsFile) => {
@@ -58,6 +59,10 @@ export class Server extends Hapi.Server {
         this.modules.apis.forEach((apisFile) => {
           const apis = require(apisFile).default(this.getElementsToInject())
           apis.forEach(a => this.route(a))
+        })
+        this.modules.apps.forEach((appsFile) => {
+          require(appsFile).default(this.getElementsToInject())
+          // apps.forEach(a => this.route(a))
         })
         this.modules.tasks.forEach((tasksFile) => {
           const tasks = require(tasksFile).default(this.getElementsToInject())
@@ -141,6 +146,9 @@ export class Server extends Hapi.Server {
             case 'view':
             case 'api':
               this.modules.apis.push(moduleName)
+              break
+            case 'app':
+              this.modules.apps.push(moduleName)
               break
             case 'task':
               if (this.scheduler) this.modules.tasks.push(moduleName)

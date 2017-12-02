@@ -10,7 +10,7 @@ export default {
     colorize: true,
   },
   modules: [],
-  moduleFilenames: ['api', 'method', 'view', 'task'],
+  moduleFilenames: ['api', 'app', 'method', 'view', 'task'],
   modelFilenames: ['model'],
   useSequelize: false,
   viewEngine: {
