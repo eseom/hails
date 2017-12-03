@@ -12,7 +12,11 @@ if (process.env.NODE_ENV !== 'production') {
   const watcher = chokidar.watch(Path.resolve(process.cwd(), 'src/**/*'), {})
   watcher.on('change', (path) => {
     server.logger.info('changed', path)
-    delete require.cache[require.resolve(path)]
+    // console.log(require.cache[require.resolve(path)])
+    // delete require.cache[require.resolve(path)]
+    // require.cache = {};
+    hotload(require.resolve(path))
+    // delete require.cache
     const newHails = hotload('./index')
     const promises = []
     promises.push(server.stop())

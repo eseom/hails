@@ -130,9 +130,25 @@ export class Server extends Hapi.Server {
               if (config.useSequelize) {
                 try {
                   const importedModels = require(moduleName).default
-                  importedModels(this.DataTypes).forEach((model) => {
-                    this.modules.models[model.model] =
-                      this.sequelize.define(model.table, model.options)
+                  importedModels(this.DataTypes, this).forEach((mf) => {
+                    this.modules.models[mf.model] =
+                      this.sequelize.define(mf.table, mf.fields, mf.options || {})
+
+                    // for sequelize 4
+                    // instance methods
+                    const im = mf.options.instanceMethods
+                    const cm = mf.options.classMethods
+                    if (im) {
+                      Object.keys(im).forEach((key) => {
+                        this.modules.models[mf.model].prototype[key] = im[key]
+                      })
+                    }
+                    // class methods
+                    if (cm) {
+                      Object.keys(cm).forEach((key) => {
+                        this.modules.models[mf.model][key] = cm[key]
+                      })
+                    }
                   })
                 } catch (e) {
                   systemLogger.error(e, e.stack)
@@ -165,8 +181,8 @@ export class Server extends Hapi.Server {
     // intiialize models
     if (config.useSequelize) {
       Object.keys(this.modules.models).forEach((modelName) => {
-        if (this.modules.models[modelName].associate) {
-          this.modules.models[modelName].associate(this.modules.models)
+        if (this.modules.models[modelName].initialize) {
+          this.modules.models[modelName].initialize(this.modules.models)
         }
       })
     }
