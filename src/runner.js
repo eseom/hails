@@ -1,3 +1,5 @@
+/* eslint-disable import/no-dynamic-require */
+
 const Hails = require('./index')
 const chokidar = require('chokidar')
 const Path = require('path')
@@ -9,7 +11,9 @@ server.init().then((done) => {
   done()
 })
 if (process.env.NODE_ENV !== 'production') {
-  const watcher = chokidar.watch(Path.resolve(process.cwd(), 'src/**/*'), {})
+  const settingsFile = Path.resolve(process.cwd(), 'settings.js')
+  const options = require(settingsFile)[process.env.NODE_ENV || 'development']
+  const watcher = chokidar.watch(Path.resolve(process.cwd(), `${options.context}/**/*`), {})
   watcher.on('change', (path) => {
     server.logger.info('changed', path)
     // console.log(require.cache[require.resolve(path)])
