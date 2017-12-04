@@ -49,7 +49,7 @@
     "nunjucks": "^3.0.1",
     "pg": "^7.3.0",
     "sequelize": "^4.25.1",
-    "sequelize-cli": "^3.0.0",
+    "sequelize-cli": "^3.2.0",
     "sqlite3": "^3.1.13",
     "vision": "^4.1.1",
     "winston": "^2.4.0",
