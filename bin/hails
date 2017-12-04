@@ -11,10 +11,14 @@ const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
 const execSequelize = (c) => {
   const call = spawn(sequelizeCli, [c, ...process.argv.slice(3)])
   call.stdout.on('data', (data) => {
-    systemLogger.info(data.toString().trim())
+    data.split('\n').forEach((d) => {
+      systemLogger.info(data.toString().trim())
+    }
   })
   call.stderr.on('data', (data) => {
-    systemLogger.error(data.toString().trim())
+    data.split('\n').forEach((d) => {
+      systemLogger.error(data.toString().trim())
+    }
   })
 }
 
