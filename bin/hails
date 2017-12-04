@@ -2,17 +2,14 @@
 require('../tools/babel-require')
 
 const spawn = require('child_process').spawn
-const chokidar = require('chokidar')
-const Path = require('path')
 const { systemLogger } = require('../lib/logger')
-const hotload = require('hotload')
 
 const command = process.argv[2]
 const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
 
 
 const execSequelize = (c) => {
-  const call = spawn(sequelizeCli, [c])
+  const call = spawn(sequelizeCli, [c, ...process.argv.slice(3)])
   call.stdout.on('data', (data) => {
     systemLogger.info(data.toString().trim())
   })
@@ -20,19 +17,6 @@ const execSequelize = (c) => {
     systemLogger.error(data.toString().trim())
   })
 }
-
-
-// const watcher = chokidar.watch(Path.resolve(process.cwd(), 'src/**/*'), {
-
-// })
-
-// watcher.on('change', (path) => {
-//   // console.log(path, require.cache)
-//   // require.cache = {}
-//   hotload('../lib/runner')
-//   // require('../lib/runner')
-//   // require(path)
-// })
 
 switch (command) {
   case 'run':
