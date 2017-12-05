@@ -8,6 +8,7 @@ export default {
   logger: {
     level: 'silly',
     colorize: true,
+    timestamp: true,
   },
   modules: [],
   moduleFilenames: ['api', 'app', 'method', 'view', 'task'],

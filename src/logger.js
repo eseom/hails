@@ -24,6 +24,7 @@ export const systemLogger = new (winston.Logger)({
     new (winston.transports.Console)({
       colorize: true,
       label: 'system',
+      timestamp: true,
     }),
   ],
 })
