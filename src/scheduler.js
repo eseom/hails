@@ -6,6 +6,7 @@ export default (config, logger) => {
     redis,
     jobEvents: false,
   })
+  queue.setMaxListeners(1000)
 
   // get schedules from config
   let schedules = []
