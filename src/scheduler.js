@@ -3,8 +3,7 @@ import * as kue from 'kue-scheduler'
 export default (config, logger) => {
   const redis = config.scheduler.broker.redis
   const queue = kue.createQueue({
-    redis,
-    jobEvents: false,
+	...config.scheduler.broker,
   })
   queue.setMaxListeners(1000)
 
@@ -19,6 +18,7 @@ export default (config, logger) => {
 
   // make scheduler
   const scheduler = {
+	queue,
     register(name, callback) {
       return queue.process(name, 10, callback)
     },
