@@ -43,16 +43,14 @@ export default (config, logger) => {
   }
 
   // initialize
-  queue.clear(() => {
-    logger.info('periodic schedules: %d', schedules.length)
-    schedules.forEach((sche) => {
-      logger.silly(sche)
-      const job = (
-        queue.createJob(sche[1], {}).removeOnComplete(true)
-      )
-        .unique(sche[1])
-      queue.every(sche[0], job)
-    })
+  logger.info('periodic schedules: %d', schedules.length)
+  schedules.forEach((sche) => {
+    logger.silly(sche)
+    const job = (
+      queue.createJob(sche[1], {}).removeOnComplete(true)
+    )
+      .unique(sche[1])
+    queue.every(sche[0], job)
   })
   return scheduler
 }
