@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.3.17",
+  "version": "0.4.3",
   "main": "index.js",
   "license": "MIT",
   "bin": {
@@ -26,40 +26,36 @@
     "url": "git+https://github.com/eseom/hails"
   },
   "dependencies": {
-    "babel-plugin-import": "^1.6.0",
+    "babel-plugin-import": "^1.6.3",
     "babel-plugin-syntax-export-extensions": "^6.13.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
-    "blipp": "^2.3.0",
-    "catbox-disk": "^2.0.9",
-    "catbox-redis": "^3.1.1",
-    "chokidar": "^1.7.0",
-    "hapi": "^16.6.2",
-    "hapi-es7-async-handler": "^1.0.11",
-    "hapi-swagger": "^7.8.1",
-    "hoek": "4.2.0",
-    "hotload": "^0.0.5",
-    "inert": "^4.2.1",
-    "kue": "^0.11.6",
+    "blipp": "^3.0.0",
+    "catbox-redis": "^4.0.0",
+    "hapi": "^17.2.0",
+    "hapi-swagger": "^9.0.0",
+    "inert": "^5.0.1",
     "kue-scheduler": "^0.7.4",
     "mysql": "^2.15.0",
-    "nes": "^6.4.3",
-    "nunjucks": "^3.0.1",
-    "pg": "^7.3.0",
-    "sequelize": "^4.25.1",
+    "nes": "^7.0.2",
+    "pg": "^7.4.0",
+    "sequelize": "^4.28.6",
     "sequelize-cli": "^3.2.0",
     "sqlite3": "^3.1.13",
-    "vision": "^4.1.1",
-    "winston": "^2.4.0",
-    "yar": "^8.1.2"
+    "twig": "^1.10.5",
+    "vision": "5.2.0",
+    "winston": "^3.0.0-rc1",
+    "yar": "^9.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.0.1",
-    "eslint": "^4.8.0",
-    "eslint-config-airbnb": "^15.1.0",
-    "eslint-plugin-import": "^2.7.0"
+    "babel-eslint": "^8.1.1",
+    "chokidar": "^1.7.0",
+    "eslint": "^4.14.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "hotload": "^0.0.5"
   }
 }

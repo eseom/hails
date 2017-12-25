@@ -1,20 +1,14 @@
 import * as kue from 'kue-scheduler'
 
 export default (config, logger) => {
-  const redis = config.scheduler.broker.redis
+  const { redis } = config.scheduler.broker
   const queue = kue.createQueue({
 	...config.scheduler.broker,
   })
   queue.setMaxListeners(1000)
 
   // get schedules from config
-  let schedules = []
-  try {
-    schedules = config.scheduler.schedules
-  } catch (e) {
-    schedules = []
-  }
-  schedules = schedules || []
+  const schedules = config.scheduler.schedules || []
 
   // make scheduler
   const scheduler = {

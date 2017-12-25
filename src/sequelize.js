@@ -12,14 +12,18 @@ export const getSequelizeInstance = (logger, config) => {
       logger.error('options.database { url: string, options: object } is not exists.')
       process.exit(1)
     }
-    let url = ''
-    let options
-    if (!config.database.url) {
-      options = config.database
-    } else {
-      url = config.database.url
-      options = config.database.options
-    }
+    const { url, options } = (() => {
+      if (!config.database.url) {
+        return {
+          url: '',
+          options: config.database,
+        }
+      }
+      return {
+        url: config.database.url,
+        options: config.database.options,
+      }
+    })()
     if (options.dialect) { require(`./database/${options.dialect}`) }
     if (typeof options.logging === 'undefined') { options.logging = logger.silly }
     if (url) {

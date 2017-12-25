@@ -2,7 +2,7 @@
 require('../tools/babel-require')
 
 const spawn = require('child_process').spawn
-const { systemLogger } = require('../lib/logger')
+const logger = require('../lib/logger')
 
 const command = process.argv[2]
 const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
@@ -12,12 +12,12 @@ const execSequelize = (c) => {
   const call = spawn(sequelizeCli, [c, ...process.argv.slice(3)])
   call.stdout.on('data', (data) => {
     data.toString().trim().split('\n').forEach((d) => {
-      systemLogger.info(d)
+      logger.info(d)
     })
   })
   call.stderr.on('data', (data) => {
     data.toString().trim().split('\n').forEach((d) => {
-      systemLogger.error(d)
+      logger.error(d)
     })
   })
 }

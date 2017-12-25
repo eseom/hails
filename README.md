@@ -2,6 +2,8 @@
 
 hapi based web stack with sequelize, kuejs, etc.
 
+- from 0.4.0, added supports for hapi17
+
 # get started
 
 ```bash
@@ -58,10 +60,9 @@ yarn dev
   },
   logger: {
     level: 'silly',
-    colorize: true,
   },
   modules: [],
-  moduleFilenames: ['api', 'view', 'task'],
+  moduleFilenames: ['api', 'app', 'method', 'view', 'task'],
   modelFilenames: ['model'],
   useSequelize: false,
   viewEngine: {
@@ -78,8 +79,7 @@ yarn dev
   },
   yar: {
     engine: {
-      type: 'disk',
-      cachePath: '/tmp',
+      type: 'memory',
     },
     cookieOptions: {
       password: 'the-password-must-be-at-least-32-characters-long',

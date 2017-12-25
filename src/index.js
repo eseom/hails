@@ -1,118 +1,67 @@
 /* eslint-disable import/no-dynamic-require */
 
-import Fs from 'fs'
 import Path from 'path'
-import Hoek from 'hoek'
 import Hapi from 'hapi'
+import Hoek from 'hoek'
+import Fs from 'fs'
 import Vision from 'vision'
-import Inert from 'inert'
-import Blipp from 'blipp'
 import Nes from 'nes'
+import Blipp from 'blipp'
+import Inert from 'inert'
 
-import getScheduler from './scheduler'
+import initializeLogger from './logger'
 import defaultOptions from './default-options'
-import { initLogger, systemLogger } from './logger'
+import getScheduler from './scheduler'
 import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
 import { setViewEngine } from './view'
 
-
-export class Server extends Hapi.Server {
-  getElementsToInject() {
-    return {
-      models: this.modules.models,
-      server: this,
-      scheduler: this.scheduler || {
-        now: () => {
-          this.logger.error('scheduler.now() called: config.scheduler.enable == false')
-        },
-      },
-      logger: this.logger,
-    }
+export default class {
+  stop() {
+    return this.hapiServer.stop()
   }
+  async init() {
+    // settings
+    const settings = require(Path.resolve(process.cwd(), 'settings.js'))[process.env.NODE_ENV || 'development']
 
-  constructor() {
-    super()
-    /**
-     * hails configuration
-     */
-    this.config = {}
-    this.scheduler = undefined
-    this.sequelize = undefined
-    this.DataTypes = undefined
-    this.logger = undefined
-
-    /**
-     * divided modules container
-     */
-    this.modules = {
-      list: [],
-      models: [],
-      tasks: [],
-      apis: [],
-      apps: [],
-      methods: [],
-      install: () => {
-        this.modules.methods.forEach((methodsFile) => {
-          const methods = require(methodsFile).default(this.getElementsToInject())
-          methods.forEach(m => this.method(m))
-        })
-        this.modules.apis.forEach((apisFile) => {
-          const apis = require(apisFile).default(this.getElementsToInject())
-          apis.forEach(a => this.route(a))
-        })
-        this.modules.apps.forEach((appsFile) => {
-          require(appsFile).default(this.getElementsToInject())
-          // apps.forEach(a => this.route(a))
-        })
-        this.modules.tasks.forEach((tasksFile) => {
-          const tasks = require(tasksFile).default(this.getElementsToInject())
-          tasks.forEach(t => this.scheduler.register(t.name, t.handler))
-          // tasks.forEach(a => this.route(a))
-        })
-      },
-    }
-  }
-
-  init() {
-    const settingsFile = Path.resolve(process.cwd(), 'settings.js')
-    const options = require(settingsFile)[
-      process.env.NODE_ENV || 'development']
-
-    systemLogger.info('options initializing...')
-    const config = Hoek.applyToDefaults(defaultOptions, options)
+    // config
+    const config = Hoek.applyToDefaults(defaultOptions, settings)
     this.config = config
 
-    // logger
-    this.logger = initLogger(config.logger || {})
+    // initialize logger
+    const logger = initializeLogger(config.logger)
+    this.logger = logger
+    logger.info('applying configs from settings.js...')
 
-    // server cache for session
-    let catboxConfig
-    if (config.yar.engine.type === 'redis') {
-      catboxConfig = {
-        engine: require('catbox-redis'),
-        name: 'session',
-        url: config.redis.url,
-      }
-    } else {
-      catboxConfig = {
-        engine: require('catbox-disk'),
-        name: 'session',
-        cachePath: config.yar.engine.cachePath,
-      }
-    }
-    this.cache.provision(catboxConfig)
+    // hapi server
+    this.hapiServer = Hapi.server({
+      port: config.connection.port,
+
+      // server cache for session
+      cache: (() => {
+        if (config.yar.engine.type === 'redis') {
+          return {
+            engine: require('catbox-redis'),
+            name: 'session',
+            url: config.redis.url,
+          }
+        }
+        return {
+          engine: require('catbox-memory'),
+          name: 'session',
+        }
+      })(),
+    })
 
     // scheduler
     this.scheduler = config.scheduler.enable ? getScheduler(config, this.logger) : undefined
 
-    // model
+    // models
     if (config.useSequelize) {
-      this.sequelize = getSequelizeInstance(systemLogger, config)
+      this.sequelize = getSequelizeInstance(logger, config)
       this.DataTypes = getSequelizeDataTypes()
     }
 
     // modules
-    // const callerDir = Path.dirname(module.parent.filename)
     const allFiles = config.moduleFilenames.concat(config.modelFilenames)
 
     this.modules.list = config.modules.map(m => Path.join(config.context, m))
@@ -128,32 +77,27 @@ export class Server extends Hapi.Server {
           switch (mod) {
             case 'model':
               if (config.useSequelize) {
-                try {
-                  const importedModels = require(moduleName).default
-                  importedModels(this.DataTypes, this).forEach((mf) => {
-                    this.modules.models[mf.model] =
-                      this.sequelize.define(mf.table, mf.fields, mf.options || {})
+                const importedModels = require(moduleName).default
+                importedModels(this.DataTypes, this).forEach((mf) => {
+                  this.modules.models[mf.model] =
+                    this.sequelize.define(mf.table, mf.fields, mf.options || {})
 
-                    // for sequelize 4
-                    // instance methods
-                    const im = mf.options.instanceMethods
-                    const cm = mf.options.classMethods
-                    if (im) {
-                      Object.keys(im).forEach((key) => {
-                        this.modules.models[mf.model].prototype[key] = im[key]
-                      })
-                    }
-                    // class methods
-                    if (cm) {
-                      Object.keys(cm).forEach((key) => {
-                        this.modules.models[mf.model][key] = cm[key]
-                      })
-                    }
-                  })
-                } catch (e) {
-                  systemLogger.error(e, e.stack)
-                  process.exit(-1)
-                }
+                  // for sequelize 4
+                  // instance methods
+                  const im = mf.options.instanceMethods
+                  const cm = mf.options.classMethods
+                  if (im) {
+                    Object.keys(im).forEach((key) => {
+                      this.modules.models[mf.model].prototype[key] = im[key]
+                    })
+                  }
+                  // class methods
+                  if (cm) {
+                    Object.keys(cm).forEach((key) => {
+                      this.modules.models[mf.model][key] = cm[key]
+                    })
+                  }
+                })
               }
               break
             case 'method':
@@ -173,7 +117,8 @@ export class Server extends Hapi.Server {
               break
           }
         } catch (e) {
-          this.logger.error(e)
+          this.logger.error('%j', e)
+          process.exit(-1)
         }
       })
     })
@@ -187,7 +132,7 @@ export class Server extends Hapi.Server {
       })
     }
 
-    // remap swagger version
+    // rewrite swagger version
     config.swagger.info.version = config.version
 
     // include auth
@@ -205,14 +150,11 @@ export class Server extends Hapi.Server {
       Inert,
       Vision,
       {
-        register: require('hapi-es7-async-handler'),
-      },
-      {
-        register: require('yar'),
+        plugin: require('yar'),
         options: config.yar,
       },
       {
-        register: require('hapi-swagger'),
+        plugin: require('hapi-swagger'),
         options: config.swagger,
       },
       Blipp,
@@ -226,44 +168,78 @@ export class Server extends Hapi.Server {
       })()),
     ]
 
-    return new Promise((resolve, reject) => {
-      this.connection(config.connection)
+    this.modules.install()
+    await this.hapiServer.register(plugins)
+    setViewEngine(this.hapiServer, config, this.modules.list)
 
-      // yar optinos
-      config.yar.storeBlank = false
-      config.yar.maxCookieSize = 0 // use server side storage
-      config.yar.cache = {
-        cache: 'session',
-      }
-
-      this.register(plugins, (err) => {
-        if (err) {
-          reject(err)
-          return
-        }
-
-        // view
-        setViewEngine(this, config, this.modules.list)
-
-        // auth
-        try {
-          if (auths) {
-            auths.forEach((auth) => {
-              this.auth.scheme(auth[0], auth[1])
-              this.auth.strategy(auth[0], auth[0], {
-                validateFunc: () => { },
-              })
-            })
-          }
-        } catch (e) {
-          systemLogger.error(e, e.stack)
-        }
-
-        this.modules.install()
-        resolve(() => {
-          this.start()
+    // auth
+    try {
+      if (auths) {
+        auths.forEach((auth) => {
+          this.auth.scheme(auth[0], auth[1])
+          this.auth.strategy(auth[0], auth[0], {
+            validateFunc: () => { },
+          })
         })
-      })
-    })
+      }
+    } catch (e) {
+      logger.error(e, e.stack)
+    }
+
+    // start
+    return this.hapiServer.start()
+  }
+
+  getElementsToInject() {
+    return {
+      models: this.modules.models,
+      server: this.hapiServer,
+      config: this.config,
+      scheduler: this.scheduler || {
+        now: () => {
+          this.logger.error('scheduler.now() called: config.scheduler.enable == false')
+        },
+      },
+      logger: this.logger,
+    }
+  }
+
+  constructor() {
+    this.config = {}
+    this.scheduler = undefined
+    this.sequelize = undefined
+    this.DataTypes = undefined
+    this.logger = undefined
+
+    /**
+     * divided modules container
+     */
+    this.modules = {
+      list: [],
+      models: [],
+      tasks: [],
+      apis: [],
+      apps: [],
+      methods: [],
+      install: () => {
+        this.modules.methods.forEach((methodsFile) => {
+          const methods = require(methodsFile).default(this.getElementsToInject())
+          methods.forEach(m => this.hapiServer.method(m.name, m))
+        })
+        this.modules.apis.forEach((apisFile) => {
+          const apis = require(apisFile).default(this.getElementsToInject())
+          apis.forEach(a => this.hapiServer.route(a))
+        })
+        this.modules.apps.forEach((appsFile) => {
+          require(appsFile).default(this.getElementsToInject())
+          // apps.forEach(a => this.route(a))
+        })
+        this.modules.tasks.forEach((tasksFile) => {
+          const tasks = require(tasksFile).default(this.getElementsToInject())
+          tasks.forEach(t => this.scheduler.register(t.name, t.handler))
+          // tasks.forEach(a => this.route(a))
+        })
+      },
+    }
   }
 }

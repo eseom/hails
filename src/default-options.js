@@ -7,8 +7,6 @@ export default {
   },
   logger: {
     level: 'silly',
-    colorize: true,
-    timestamp: true,
   },
   modules: [],
   moduleFilenames: ['api', 'app', 'method', 'view', 'task'],
@@ -28,8 +26,7 @@ export default {
   },
   yar: {
     engine: {
-      type: 'disk',
-      cachePath: '/tmp',
+      type: 'memory',
     },
     cookieOptions: {
       password: 'the-password-must-be-at-least-32-characters-long',

@@ -1,30 +1,28 @@
-import winston from 'winston'
-// const winston = require('winston')
+const winston = require('winston')
+const { format } = require('logform')
 
-winston.setLevels(winston.config.syslog.levels)
+export default (loggerSettings) => {
+  const alignedWithColorsAndTime = format.combine(
+    format.splat(),
+    format.colorize(),
+    format((info, opts) => {
+      info.timestamp = new Date().toLocaleString()
+      return info
+    })(),
+    format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`),
+  )
 
-export const initLogger = (loggerConfig) => {
-  const hailsLogger = new winston.Logger({
+  const logger = winston.createLogger({
+    level: loggerSettings.level,
     transports: [
-      new (winston.transports.Console)(loggerConfig),
     ],
   })
-  return {
-    error: (msg, ...args) => hailsLogger.error(msg, ...args),
-    warn: (msg, ...args) => hailsLogger.warn(msg, ...args),
-    info: (msg, ...args) => hailsLogger.info(msg, ...args),
-    verbose: (msg, ...args) => hailsLogger.verbose(msg, ...args),
-    debug: (msg, ...args) => hailsLogger.debug(msg, ...args),
-    silly: (msg, ...args) => hailsLogger.silly(msg, ...args),
-  }
+
+  logger.add(new winston.transports.Console({
+    format: alignedWithColorsAndTime,
+    colorize: true,
+  }));
+
+  return logger
 }
 
-export const systemLogger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({
-      colorize: true,
-      label: 'system',
-      timestamp: true,
-    }),
-  ],
-})
