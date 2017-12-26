@@ -1,22 +1,22 @@
 import * as Path from 'path'
-import Twig from 'twig'
+import Nunjucks from 'nunjucks'
 
 export const setViewEngine = (server, config, installedDirs) => {
   if (!config.viewEngine) { return }
 
-  const production = process.env.NODE_ENV === 'production'
-
   server.views({
-    isCached: production,
+    isCached: process.env.NODE_ENV === 'production',
     engines: {
-      twig: {
-        compile: (src, options) => context => Twig.twig({
-          ...(production ? { id: options.filename } : {}),
-          data: src,
-        }).render(context),
+      html: {
+        compile: (src, options) => context =>
+          Nunjucks.compile(src, options.environment).render(context),
+        prepare: (options, next) => {
+          options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
+          return next()
+        },
       },
     },
-    // relativeTo: __dirname,
+    relativeTo: process.cwd(),
     path: installedDirs.map(d => Path.join(d, 'templates')),
-  });
+  })
 }

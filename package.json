@@ -42,11 +42,11 @@
     "kue-scheduler": "^0.7.4",
     "mysql": "^2.15.0",
     "nes": "^7.0.2",
+    "nunjucks": "^3.0.1",
     "pg": "^7.4.0",
     "sequelize": "^4.28.6",
     "sequelize-cli": "^3.2.0",
     "sqlite3": "^3.1.13",
-    "twig": "^1.10.5",
     "vision": "5.2.0",
     "winston": "^3.0.0-rc1",
     "yar": "^9.0.1"
