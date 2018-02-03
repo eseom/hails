@@ -84,8 +84,8 @@ export default class {
 
                   // for sequelize 4
                   // instance methods
-                  const im = mf.options.instanceMethods
-                  const cm = mf.options.classMethods
+                  const im = mf.options && mf.options.instanceMethods
+                  const cm = mf.options && mf.options.classMethods
                   if (im) {
                     Object.keys(im).forEach((key) => {
                       this.modules.models[mf.model].prototype[key] = im[key]
@@ -117,7 +117,7 @@ export default class {
               break
           }
         } catch (e) {
-          this.logger.error('%j', e)
+          this.logger.error('%s %j', e.toString(), e.stack)
           process.exit(-1)
         }
       })

@@ -25,7 +25,7 @@ export const getSequelizeInstance = (logger, config) => {
       }
     })()
     if (options.dialect) { require(`./database/${options.dialect}`) }
-    if (typeof options.logging === 'undefined') { options.logging = logger.silly }
+    if (typeof options.logging === 'undefined') { options.logging = (...args) => { logger.silly(...args) } }
     if (url) {
       sequelize = new Sequelize(url, options)
     } else {

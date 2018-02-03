@@ -9,7 +9,7 @@ import Hails from './index'
 (async () => {
   let hails = new Hails()
   await hails.init()
-  hails.logger.info('🚧 server has started.')
+  hails.logger.info('🚧  server has started.')
 
   if (process.env.NODE_ENV !== 'production') {
     const settingsFile = Path.resolve(process.cwd(), 'settings.js')
@@ -28,7 +28,7 @@ import Hails from './index'
       hails.logger.info('restarting...')
       hails = new NewHails()
       await hails.init()
-      hails.logger.info('🚧 server has started.')
+      hails.logger.info('🚧  server has started.')
     })
   }
 })()

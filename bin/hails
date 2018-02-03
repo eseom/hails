@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 require('../tools/babel-require')
 
-const spawn = require('child_process').spawn
-const logger = require('../lib/logger')
+const { spawn } = require('child_process')
+const loggerModule = require('../lib/logger').default
 
+const logger = loggerModule({})
 const command = process.argv[2]
 const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
-
 
 const execSequelize = (c) => {
   const call = spawn(sequelizeCli, [c, ...process.argv.slice(3)])
