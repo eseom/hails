@@ -26,8 +26,8 @@ echo "module.exports = {
 echo "export default () => [{
   method: 'GET',
   path: '/',
-  handler(request, reply) {
-    reply('hello world')
+  handler(request) {
+    return 'hello world'
   },
 }]" > src/core/api.js
 
