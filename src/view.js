@@ -11,7 +11,8 @@ export const setViewEngine = (server, config, installedDirs) => {
         compile: (src, options) => context =>
           Nunjucks.compile(src, options.environment).render(context),
         prepare: (options, next) => {
-          options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
+          options.compileOptions.environment =
+            Nunjucks.configure(options.path, { watch: false })
           return next()
         },
       },
