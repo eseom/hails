@@ -139,7 +139,7 @@ export default class {
     const auths = (() => {
       try {
         const authImported = require(Path.join(Path.resolve(config.context), 'auth.js')).default
-        return authImported({ server: this })
+        return authImported(this.getElementsToInject())
       } catch (e) {
         return []
       }
@@ -168,23 +168,21 @@ export default class {
       })()),
     ]
 
-    this.modules.install()
-    await this.hapiServer.register(plugins)
-    setViewEngine(this.hapiServer, config, this.modules.list)
-
     // auth
     try {
       if (auths) {
         auths.forEach((auth) => {
-          this.auth.scheme(auth[0], auth[1])
-          this.auth.strategy(auth[0], auth[0], {
-            validateFunc: () => { },
-          })
+          this.hapiServer.auth.scheme(auth[0], auth[1])
+          this.hapiServer.auth.strategy(auth[0], auth[0])
         })
       }
     } catch (e) {
       logger.error(e, e.stack)
     }
+
+    this.modules.install()
+    await this.hapiServer.register(plugins)
+    setViewEngine(this.hapiServer, config, this.modules.list)
 
     // start
     return this.hapiServer.start()
