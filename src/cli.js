@@ -5,12 +5,21 @@ import Hails from './index'
   const cliInterface = await hails.init({ cli: true })
   hails.logger.info('🚧  executing command')
   // console.log(cliInterface)
-  const result = cliInterface[process.argv[2]]()
-  if (result.then) {
-    result.then((exitCode) => {
-      process.exit(exitCode)
-    })
-  } else {
-    process.exit(result)
+
+  const command = process.argv[2]
+  try {
+    const result = cliInterface[command]()
+    if (result.then) {
+      result.then((exitCode) => {
+        process.exit(exitCode)
+      })
+    } else {
+      process.exit(result)
+    }
+  } catch (e) {
+    if (e instanceof TypeError) { // no such command
+      hails.logger.error('no such command: %s', command)
+      process.exit(127)
+    }
   }
 })()
