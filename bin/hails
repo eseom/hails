@@ -47,6 +47,7 @@ switch (command) {
   case 'db:seed:create':
     execSequelize('seed:create')
     break
-  default:
+  default: // command
+    require('../lib/cli')
     break
 }

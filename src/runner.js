@@ -8,7 +8,7 @@ import Hails from './index'
 
 (async () => {
   let hails = new Hails()
-  await hails.init()
+  await hails.init({})
   hails.logger.info('🚧  server has started.')
 
   if (process.env.NODE_ENV !== 'production') {
@@ -27,7 +27,7 @@ import Hails from './index'
       await Promise.all(promises)
       hails.logger.info('restarting...')
       hails = new NewHails()
-      await hails.init()
+      await hails.init({})
       hails.logger.info('🚧  server has started.')
     })
   }

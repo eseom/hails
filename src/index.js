@@ -19,18 +19,25 @@ export default class {
   stop() {
     return this.hapiServer.stop()
   }
-  async init() {
+  async init({ cli = false }) {
     // settings
     const settings = require(Path.resolve(process.cwd(), 'settings.js'))[process.env.NODE_ENV || 'development']
 
     // config
     const config = Hoek.applyToDefaults(defaultOptions, settings)
+
+    // don't init the scheduler on cli mode
+    config.scheduler.enable = cli ? false : config.scheduler.enable
+
     this.config = config
 
     // initialize logger
     const logger = initializeLogger(config.logger)
     this.logger = logger
     logger.info('applying configs from settings.js...')
+
+    // cli interface
+    this.cliInterface = {}
 
     // hapi server
     this.hapiServer = Hapi.server({
@@ -113,6 +120,9 @@ export default class {
             case 'task':
               if (this.scheduler) this.modules.tasks.push(moduleName)
               break
+            case 'command':
+              this.modules.commands.push(moduleName)
+              break
             default:
               break
           }
@@ -185,7 +195,7 @@ export default class {
     setViewEngine(this.hapiServer, config, this.modules.list)
 
     // start
-    return this.hapiServer.start()
+    return !cli ? this.hapiServer.start() : this.cliInterface
   }
 
   getElementsToInject() {
@@ -218,6 +228,7 @@ export default class {
       tasks: [],
       apis: [],
       apps: [],
+      commands: [],
       methods: [],
       install: () => {
         this.modules.methods.forEach((methodsFile) => {
@@ -236,6 +247,11 @@ export default class {
           const tasks = require(tasksFile).default(this.getElementsToInject())
           tasks.forEach(t => this.scheduler.register(t.name, t.handler))
           // tasks.forEach(a => this.route(a))
+        })
+        this.modules.commands.forEach((command) => {
+          require(command).default(this.getElementsToInject()).forEach((c) => {
+            this.cliInterface[c.name] = c.handler
+          })
         })
       },
     }
