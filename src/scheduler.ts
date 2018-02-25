@@ -1,7 +1,9 @@
+import * as kueOriginal from 'kue'
 import * as kue from 'kue-scheduler'
+import * as winston from 'winston'
+import { Settings, Scheduler } from './interfaces'
 
-export default (config, logger) => {
-  const { redis } = config.scheduler.broker
+export default (config: Settings, logger: winston.LoggerInstance): Scheduler => {
   const queue = kue.createQueue({
     ...config.scheduler.broker,
   })
@@ -13,24 +15,24 @@ export default (config, logger) => {
   // make scheduler
   const scheduler = {
     queue,
-    register(name, callback) {
+    register(name: string, callback: () => void) {
       return queue.process(name, 10, callback)
     },
-    now(name, options) {
+    now(name: string, options: object) {
       return queue.createJob(name, options)
         .removeOnComplete(true)
         .delay(0)
         .save()
     },
     stop() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         try {
           queue.shutdown(10000, () => {
             resolve(true)
           })
         } catch (e) {
           console.error(e)
-          //
+          reject(e)
         }
       })
     },
@@ -38,13 +40,14 @@ export default (config, logger) => {
 
   // initialize
   logger.info('periodic schedules: %d', schedules.length)
-  schedules.forEach((sche) => {
-    logger.silly(sche)
+  schedules.forEach((sche: string[]) => {
+    logger.silly(sche.toString())
     const job = (
       queue.createJob(sche[1], {}).removeOnComplete(true)
     )
       .unique(sche[1])
     queue.every(sche[0], job)
   })
+
   return scheduler
 }

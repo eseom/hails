@@ -1,7 +1,8 @@
-const winston = require('winston')
-const { format } = require('logform')
+import * as winston from 'winston'
+import { format } from 'logform'
+import { LoggerSetting } from './interfaces'
 
-export default (loggerSettings) => {
+export default (loggerSettings: LoggerSetting): winston.LoggerInstance => {
   const alignedWithColorsAndTime = format.combine(
     format.splat(),
     format.colorize(),
@@ -11,18 +12,15 @@ export default (loggerSettings) => {
     })(),
     format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`),
   )
-
-  const logger = winston.createLogger({
+  const logger: winston.LoggerInstance = (winston as any).createLogger({
     level: loggerSettings.level,
     transports: [
     ],
   })
-
   logger.add(new winston.transports.Console({
     format: alignedWithColorsAndTime,
     colorize: true,
-  }));
-
+  }))
   return logger
 }
 

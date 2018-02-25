@@ -1,8 +1,6 @@
-/* eslint-disable import/no-dynamic-require */
-
-import chokidar from 'chokidar'
-import Path from 'path'
-import hotload from 'hotload'
+import * as Path from 'path'
+import * as chokidar from 'chokidar'
+import * as hotload from 'hotload'
 
 import Hails from './index'
 
@@ -15,15 +13,14 @@ import Hails from './index'
     const settingsFile = Path.resolve(process.cwd(), 'settings.js')
     const settings = require(settingsFile)[process.env.NODE_ENV || 'development']
     const watcher = chokidar.watch(Path.resolve(process.cwd(), `${settings.context}/**/*.js`), {})
-    watcher.on('change', async (path) => {
+    watcher.on('change', async (path: string) => {
       hails.logger.info('changed', path)
       hotload(require.resolve(path))
       const NewHails = hotload('./index').default
-      const promises = []
+      const promises: Promise<any>[] = []
       promises.push(hails.stop())
-      if (hails.scheduler) {
+      if (hails.scheduler)
         promises.push(hails.scheduler.stop())
-      }
       await Promise.all(promises)
       hails.logger.info('restarting...')
       hails = new NewHails()

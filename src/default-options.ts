@@ -9,8 +9,6 @@ export default {
     level: 'silly',
   },
   modules: [],
-  moduleFilenames: ['api', 'app', 'method', 'view', 'task', 'command'],
-  modelFilenames: ['model'],
   useSequelize: false,
   viewEngine: {
     type: 'nunjucks',
