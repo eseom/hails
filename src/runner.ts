@@ -19,8 +19,6 @@ import Hails from './index'
       const NewHails = hotload('./index').default
       const promises: Promise<any>[] = []
       promises.push(hails.stop())
-      if (hails.scheduler)
-        promises.push(hails.scheduler.stop())
       await Promise.all(promises)
       hails.logger.info('restarting...')
       hails = new NewHails()

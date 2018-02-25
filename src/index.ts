@@ -271,7 +271,9 @@ export default class Hails {
     }
   }
 
-  stop() {
-    return this.hapiServer.stop()
+  async stop() {
+    if (this.scheduler)
+      await this.scheduler.stop()
+    await this.hapiServer.stop()
   }
 }

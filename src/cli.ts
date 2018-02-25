@@ -10,11 +10,14 @@ import { CliInterface, CommandResult } from './interfaces'
   try {
     const result: CommandResult = (cliInterface as CliInterface)[command]()
     if ((result as Promise<number>).then)
-      (result as Promise<number>).then((exitCode: number) => {
+      (result as Promise<number>).then(async (exitCode: number) => {
+        await hails.stop()
         process.exit(exitCode)
       })
-    else
+    else {
+      await hails.stop()
       process.exit((result as number))
+    }
   } catch (e) {
     if (e instanceof TypeError) { // no such command
       hails.logger.error('no such command: %s', command)

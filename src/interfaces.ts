@@ -15,9 +15,8 @@ export interface LoggerSetting {
 export interface Scheduler {
   queue?: kue.Queue
   register?: (name: string, callback: () => void) => void
-  now: (name: string, options: object) => void
-  stop?: () => Promise<{}>
-  // stop?: any
+  now: (name: string, options?: object) => void
+  stop?: () => any
 }
 
 export interface DatabaseUrlOptions {
