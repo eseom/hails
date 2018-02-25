@@ -48,22 +48,22 @@ yarn dev
 * essential hapi plugins 
 * module system like django
 * sequelize integrated
+* kue integrated
 
 # default options
 
 ```
-{
+export default {
+  context: undefined,
   vesion: undefined,
   connection: {
-   host: '0.0.0.0',
-	port: 3000,
+    host: '0.0.0.0',
+    port: 3000,
   },
   logger: {
     level: 'silly',
   },
   modules: [],
-  moduleFilenames: ['api', 'app', 'method', 'view', 'task'],
-  modelFilenames: ['model'],
   useSequelize: false,
   viewEngine: {
     type: 'nunjucks',
@@ -85,8 +85,14 @@ yarn dev
       password: 'the-password-must-be-at-least-32-characters-long',
       isSecure: false,
     },
-  }
+  },
 }
+```
+
+# development
+```
+yarn
+yarn watch
 ```
 
 # api
