@@ -274,6 +274,6 @@ export default class Hails {
   async stop() {
     if (this.scheduler)
       await this.scheduler.stop()
-    await this.hapiServer.stop()
+    await this.hapiServer.stop({ timeout: 10000 })
   }
 }
