@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "lib/index",
   "typings": "lib/index",
   "license": "MIT",
@@ -8,8 +8,8 @@
     "hails": "bin/hails"
   },
   "scripts": {
-    "build": "tsc --project .",
-    "watch": "tsc --watch",
+    "build": "tsc -d --project .",
+    "watch": "tsc --watch -d",
     "lint": "tslint -c tslint.json --fix 'src/**/*.ts'",
     "prepublish": "yarn build"
   },

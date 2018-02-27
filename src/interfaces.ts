@@ -105,7 +105,7 @@ export interface CommandDefinition {
   description?: string
   arguments?: string
   options?: string[][],
-  handler: () => number
+  handler: (...args: any[]) => Promise<number> | number
 }
 
 export interface ModelDict {
