@@ -22,6 +22,14 @@ import {
 
 export * from './interfaces'
 
+class BootstrapError extends Error {
+  constructor(...args: any[]) {
+    super(...args)
+    this.name = 'BootstrapError'
+    Error.captureStackTrace(this, BootstrapError)
+  }
+}
+
 // default option + settings.js
 const getSettings = () =>
   Hoek.applyToDefaults(
@@ -252,8 +260,15 @@ export default class Hails {
           this.scheduler.register(t.name, t.handler)))
     this.modules.commands.forEach((commandsFile) =>
       this.require(commandsFile)
-        .forEach((c: CommandDefinition) =>
-          this.cliInterface[c.name] = c.handler))
+        .forEach((c: CommandDefinition) => {
+          if (!c.handler) throw new BootstrapError(`no given handler on command "${c.name}" "${commandsFile}"`)
+          this.cliInterface[c.name] = {
+            description: c.description || '',
+            arguments: c.arguments || '',
+            options: c.options || [],
+            handler: c.handler,
+          }
+        }))
   }
 
   getElementsToInject(): InjectingElements {

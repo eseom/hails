@@ -5,7 +5,12 @@ import * as Hapi from 'hapi'
 
 export type CommandResult = Promise<number> | number
 export interface CliInterface {
-  [key: string]: () => CommandResult
+  [key: string]: {
+    description?: string,
+    arguments: string,
+    options: string[][]
+    handler(...args: any[]): CommandResult
+  }
 }
 
 export interface LoggerSetting {
@@ -97,6 +102,9 @@ export interface ModelDefinition {
 
 export interface CommandDefinition {
   name: string
+  description?: string
+  arguments?: string
+  options?: string[][],
   handler: () => number
 }
 

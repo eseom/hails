@@ -27,12 +27,11 @@ export default (config: Settings, logger: winston.LoggerInstance): Scheduler => 
     stop() {
       return new Promise((resolve, reject) => {
         const timer = setInterval(() => {
-          if (!queue.shuttingDown) {
+          if (!queue.shuttingDown)
             queue.shutdown(10000, (err: Error) => {
               clearInterval(timer)
               resolve(true)
             })
-          }
         }, 500)
       })
     },

@@ -1,6 +1,6 @@
 {
   "name": "hails",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "lib/index",
   "typings": "lib/index",
   "license": "MIT",
@@ -50,6 +50,7 @@
     "blipp": "^3.0.0",
     "catbox-redis": "^4.0.0",
     "chokidar": "^1.7.0",
+    "commander": "^2.14.1",
     "hapi": "^17.2.0",
     "hapi-swagger": "^9.0.0",
     "hotload": "^0.0.5",
