@@ -3,7 +3,17 @@ import * as winston from 'winston'
 import * as Sequelize from 'sequelize'
 import * as Hapi from 'hapi'
 
+export interface InjectingElements {
+  models: ModelDict
+  server: Hapi.Server
+  settings: Settings
+  config: Settings
+  scheduler: Scheduler
+  logger: winston.LoggerInstance
+}
+
 export type CommandResult = Promise<number> | number
+
 export interface CliInterface {
   [key: string]: {
     description?: string,
@@ -19,7 +29,7 @@ export interface LoggerSetting {
 
 export interface Scheduler {
   queue?: kue.Queue
-  register?: (name: string, callback: () => void) => void
+  register?: (name: string, callback: (job: kue.Job, done: kue.DoneCallback) => void) => void
   now: (name: string, options?: object) => void
   stop?: () => any
 }
@@ -76,14 +86,12 @@ export type Settings = {
 
 export type MethodDefinition = Hapi.ServerMethodConfigurationObject
 
-export interface AuthDefinition {
-  name: string
-  handler: Hapi.ServerAuthScheme
-}
+export type RouteDefinition = Hapi.ServerRoute
 
 export interface TaskDefinition {
   name: string
-  handler: () => void
+  handler: (job: kue.Job, done: kue.DoneCallback) => void
+
 }
 
 export interface ModelDefinition {
@@ -91,10 +99,12 @@ export interface ModelDefinition {
   table: string
   fields: Sequelize.DefineAttributes
   options: {
-    instanceMethods: {
+    created_at?: string
+    updated_at?: string
+    instanceMethods?: {
       [key: string]: () => any
     }
-    classMethods: {
+    classMethods?: {
       [key: string]: () => any
     }
   }
@@ -108,6 +118,11 @@ export interface CommandDefinition {
   handler: (...args: any[]) => Promise<number> | number
 }
 
+export interface AuthDefinition {
+  name: string
+  handler: Hapi.ServerAuthScheme
+}
+
 export interface ModelDict {
   [key: string]: Sequelize.Model<any, any> & {
     initialize?: (models: ModelDict) => void
@@ -115,13 +130,4 @@ export interface ModelDict {
     prototype?: any
     [key: string]: () => void
   }
-}
-
-export interface InjectingElements {
-  models: ModelDict
-  server: Hapi.Server
-  settings: Settings
-  config: Settings
-  scheduler: Scheduler
-  logger: winston.LoggerInstance
 }

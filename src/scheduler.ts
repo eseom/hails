@@ -15,7 +15,7 @@ export default (config: Settings, logger: winston.LoggerInstance): Scheduler => 
   // make scheduler
   const scheduler = {
     queue,
-    register(name: string, callback: () => void) {
+    register(name: string, callback: (job: kueOriginal.Job, done: kueOriginal.DoneCallback) => void) {
       return queue.process(name, 10, callback)
     },
     now(name: string, options: object) {
