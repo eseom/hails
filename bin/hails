@@ -2,14 +2,37 @@
 require('../tools/babel-require')
 
 const { spawn } = require('child_process')
+const fs = require('fs')
 const loggerModule = require('../lib/logger').default
 
 const logger = loggerModule({})
 const command = process.argv[2]
 const sequelizeCli = `${__dirname}/../node_modules/.bin/sequelize`
 
+const getSequelizeCommand = (c) => {
+  const sequelizercPath = `${process.env.PWD}/.sequelizerc`
+  try {
+    fs.statSync(sequelizercPath)
+    return spawn(sequelizeCli, [
+      c,
+      ...process.argv.slice(3),
+    ])
+  } catch (e) {
+    return spawn(sequelizeCli, [
+      c,
+      '--config',
+      'node_modules/hails/sequelizerc.js',
+      '--migrations-path',
+      'db/migrations',
+      '--seeders-path',
+      'db/seeders',
+      ...process.argv.slice(3),
+    ])
+  }
+}
+
 const execSequelize = (c) => {
-  const call = spawn(sequelizeCli, [c, ...process.argv.slice(3)])
+  const call = getSequelizeCommand(c)
   call.stdout.on('data', (data) => {
     data.toString().trim().split('\n').forEach((d) => {
       logger.info(d)
