@@ -58,7 +58,7 @@ yarn dev
 export default {
   context: undefined,
   vesion: undefined,
-  connection: {
+  server: {
     host: '0.0.0.0',
     port: 3000,
   },

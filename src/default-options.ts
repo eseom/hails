@@ -1,8 +1,8 @@
 export default {
   context: undefined,
   vesion: undefined,
-  connection: {
-    host: '0.0.0.0',
+  server: {
+    host: 'localhost',
     port: 3000,
   },
   logger: {

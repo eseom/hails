@@ -52,7 +52,7 @@ export type Settings = {
   version?: string
   context: string
   modules?: string[]
-  connection?: {
+  server?: {
     port?: number
   }
   swagger?: {

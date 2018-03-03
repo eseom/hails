@@ -72,6 +72,29 @@ export default class Hails {
     return require(filename).default(this.getElementsToInject())
   }
 
+  makeDefaultOptions() {
+    return Hoek.applyToDefaults(this.settings.server, {
+      routes: {
+        json: {
+          space: 2,
+        },
+      },
+      // server cache for session
+      cache: (() => {
+        if (this.settings.yar.engine.type === 'redis')
+          return {
+            engine: require('catbox-redis'),
+            name: 'session',
+            url: this.settings.redis.url,
+          }
+        return {
+          engine: require('catbox-memory'),
+          name: 'session',
+        }
+      })(),
+    })
+  }
+
   async init({ cli = false }) {
     // settings
     const settings: Settings = this.config = this.settings = getSettings()
@@ -81,27 +104,7 @@ export default class Hails {
     logger.info('applying settings from settings.js...')
 
     // hapi server
-    this.hapiServer = new Hapi.Server({
-      port: settings.connection.port,
-      routes: {
-        json: {
-          space: 2,
-        },
-      },
-      // server cache for session
-      cache: (() => {
-        if (settings.yar.engine.type === 'redis')
-          return {
-            engine: require('catbox-redis'),
-            name: 'session',
-            url: settings.redis.url,
-          }
-        return {
-          engine: require('catbox-memory'),
-          name: 'session',
-        }
-      })(),
-    })
+    this.hapiServer = new Hapi.Server(this.makeDefaultOptions())
 
     // scheduler
     this.scheduler = settings.scheduler.enable ? getScheduler(settings, logger) : undefined
