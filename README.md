@@ -1,10 +1,12 @@
-# hails
+## hails
 
 hapi based web stack with sequelize, kuejs, etc.
 
 - from 0.4.0, added supports for hapi17
 
-# get started
+[![npm version][npm-badge]][npm-url]
+
+## get started
 
 ```bash
 mkdir my-project
@@ -36,7 +38,7 @@ yarn hails run
 # open http://localhost:3000
 ```
 
-# sample code
+## sample code
 ```
 git clone https://github.com/eseom/hails-sample <project name>
 cd <project name>
@@ -44,13 +46,13 @@ yarn
 yarn dev
 ```
 
-# feature
+## feature
 * essential hapi plugins 
 * module system like django
 * sequelize integrated
 * kue integrated
 
-# default options
+## default options
 
 ```
 export default {
@@ -89,11 +91,14 @@ export default {
 }
 ```
 
-# development
+## development
 ```
 yarn
 yarn watch
 ```
 
-# api
+## api
 * (TODO)
+
+[npm-url]: https://www.npmjs.com/package/hails
+[npm-badge]: https://img.shields.io/npm/v/hails.svg

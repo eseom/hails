@@ -4,6 +4,7 @@ import * as Sequelize from 'sequelize'
 import * as Hapi from 'hapi'
 
 export interface InjectingElements {
+  sequelize: Sequelize.Sequelize
   models: ModelDict
   server: Hapi.Server
   settings: Settings
@@ -98,16 +99,8 @@ export interface ModelDefinition {
   model: string
   table: string
   fields: Sequelize.DefineAttributes
-  options: {
-    created_at?: string
-    updated_at?: string
-    instanceMethods?: {
-      [key: string]: () => any
-    }
-    classMethods?: {
-      [key: string]: () => any
-    }
-  }
+  initialize?: (models: ModelDict) => void
+  options?: Sequelize.DefineOptions<any>,
 }
 
 export interface CommandDefinition {

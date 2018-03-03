@@ -25,7 +25,7 @@ export const getSequelizeInstance = (logger: winston.LoggerInstance, config: Set
     if (options.dialect)
       require(`./database/${options.dialect}`)
     if (typeof options.logging === 'undefined')
-      options.logging = (msg: string, ...meta: any[]) => { logger.silly(msg, ...meta) }
+      options.logging = (msg: string) => logger.silly(msg)
     if (url)
       sequelize = new Sequelize(url, options)
     else

@@ -83,7 +83,11 @@ export default class Hails {
     // hapi server
     this.hapiServer = new Hapi.Server({
       port: settings.connection.port,
-
+      routes: {
+        json: {
+          space: 2,
+        },
+      },
       // server cache for session
       cache: (() => {
         if (settings.yar.engine.type === 'redis')
@@ -128,19 +132,21 @@ export default class Hails {
                 (this.modules.models[mf.model] as Sequelize.Model<any, any>) =
                   this.sequelize.define(mf.table, mf.fields, mf.options || {})
 
-                // for sequelize 4
-                // instance methods
-                const im = mf.options && mf.options.instanceMethods
-                const cm = mf.options && mf.options.classMethods
-                if (im)
-                  Object.keys(im).forEach((key) => {
-                    this.modules.models[mf.model].prototype[key] = im[key]
-                  })
-                // class methods
-                if (cm)
-                  Object.keys(cm).forEach((key: string) => {
-                    this.modules.models[mf.model][key] = cm[key]
-                  })
+
+                this.modules.models[mf.model]['initialize'] = mf.initialize ? mf.initialize : () => { }
+                // // for sequelize 4
+                // // instance methods
+                // const im = mf.options && mf.options.instanceMethods
+                // const cm = mf.options && mf.options.classMethods
+                // if (im)
+                //   Object.keys(im).forEach((key) => {
+                //     this.modules.models[mf.model].prototype[key] = im[key]
+                //   })
+                // // class methods
+                // if (cm)
+                //   Object.keys(cm).forEach((key: string) => {
+                //     this.modules.models[mf.model][key] = cm[key]
+                //   })
               })
             }
             break
@@ -273,6 +279,7 @@ export default class Hails {
 
   getElementsToInject(): InjectingElements {
     return {
+      sequelize: this.sequelize,
       models: this.modules.models,
       server: this.hapiServer,
       settings: this.settings,
