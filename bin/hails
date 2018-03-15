@@ -3,6 +3,7 @@ require('../tools/babel-require')
 
 const { spawn } = require('child_process')
 const fs = require('fs')
+const { getSettings, path } = require('../lib/settings')
 const loggerModule = require('../lib/logger').default
 
 const logger = loggerModule({})
@@ -18,6 +19,17 @@ const getSequelizeCommand = (c) => {
       ...process.argv.slice(3),
     ])
   } catch (e) {
+    if (typeof getSettings().database === 'undefined') {
+      console.error(`
+--[ hails error ]--
+
+settings file location: ${path}
+no database settings
+
+See the Sequelize manual: http://docs.sequelizejs.com/manual/installation/usage.html#options
+`)
+      process.exit(-4)
+    }
     return spawn(sequelizeCli, [
       c,
       '--config',

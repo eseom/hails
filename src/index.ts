@@ -12,6 +12,7 @@ import * as winston from 'winston'
 
 import initializeLogger from './logger'
 import getScheduler from './scheduler'
+import { getSettings } from './settings'
 import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
 import { setViewEngine } from './view'
 import {
@@ -29,15 +30,6 @@ class BootstrapError extends Error {
     Error.captureStackTrace(this, BootstrapError)
   }
 }
-
-// default option + settings.js
-const getSettings = () =>
-  Hoek.applyToDefaults(
-    require('./default-options').default,
-    require(
-      Path.resolve(process.cwd(), 'settings.js')
-    )[process.env.NODE_ENV || 'development']
-  )
 
 const allFiles = ['api', 'app', 'method', 'view', 'task', 'command', 'model']
 

@@ -3,6 +3,7 @@ import * as chokidar from 'chokidar'
 import * as hotload from 'hotload'
 
 import Hails from './index'
+import { getSettings } from './settings'
 
 (async () => {
   let hails = new Hails()
@@ -10,8 +11,7 @@ import Hails from './index'
   hails.logger.info('🚧  server has started.')
 
   if (process.env.NODE_ENV !== 'production') {
-    const settingsFile = Path.resolve(process.cwd(), 'settings.js')
-    const settings = require(settingsFile)[process.env.NODE_ENV || 'development']
+    const settings = getSettings()
     const watcher = chokidar.watch(Path.resolve(process.cwd(), `${settings.context}/**/*.js`), {})
     watcher.on('change', async (path: string) => {
       hails.logger.info('changed', path)
