@@ -15,6 +15,7 @@ import getScheduler from './scheduler'
 import { getSettings } from './settings'
 import { getSequelizeInstance, getSequelizeDataTypes } from './sequelize'
 import { setViewEngine } from './view'
+import admin from './admin'
 import {
   InjectingElements, Scheduler,
   CliInterface, ModelDict, MethodDefinition, TaskDefinition,
@@ -31,7 +32,7 @@ class BootstrapError extends Error {
   }
 }
 
-const allFiles = ['api', 'app', 'method', 'view', 'task', 'command', 'model']
+const allFiles = ['api', 'app', 'method', 'view', 'task', 'command', 'model', 'admin']
 
 export default class Hails {
   hapiServer: Hapi.Server = undefined
@@ -49,6 +50,7 @@ export default class Hails {
     apis: string[]
     apps: string[]
     commands: string[]
+    admins: string[]
     methods: string[]
   } = {
       list: [],
@@ -57,6 +59,7 @@ export default class Hails {
       apis: [],
       apps: [],
       commands: [],
+      admins: [],
       methods: [],
     }
 
@@ -160,6 +163,9 @@ export default class Hails {
             break
           case 'command':
             this.modules.commands.push(moduleName)
+            break
+          case 'admin':
+            this.modules.admins.push(moduleName)
             break
           default:
             break
@@ -270,6 +276,15 @@ export default class Hails {
             handler: c.handler,
           }
         }))
+    this.modules.admins.forEach((adminsFile) => {
+      const admins: any[] = []
+      this.require(adminsFile)
+        .forEach((a: any) => {
+          admins.push(a)
+        })
+      admin.register(this.hapiServer, admins)
+      // admin.setMenus(menus)
+    })
   }
 
   getElementsToInject(): InjectingElements {

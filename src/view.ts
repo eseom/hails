@@ -24,6 +24,6 @@ export const setViewEngine = (server: Hapi.Server, config: Settings, installedDi
       },
     },
     relativeTo: process.cwd(),
-    path: installedDirs.map(d => Path.join(d, 'templates')),
+    path: installedDirs.map(d => Path.join(d, 'templates')).concat([__dirname + '/../templates']),
   })
 }
