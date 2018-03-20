@@ -237,11 +237,11 @@ export default class Hails {
       logger.error(e, e.stack)
     }
 
-    // install user modules
-    this.install()
-
     // hapi plugin
     await this.hapiServer.register(plugins)
+
+    // install user modules
+    this.install()
 
     // set view engine
     setViewEngine(this.hapiServer, settings, this.modules.list)
@@ -283,7 +283,17 @@ export default class Hails {
           admins.push(a)
         })
       admin.register(this.hapiServer, admins)
-      // admin.setMenus(menus)
+    })
+
+    // static directories
+    this.hapiServer.route({
+      path: '/static/{p*}',
+      method: 'get',
+      handler: {
+        directory: {
+          path: this.modules.list.map(m => `${m}/static`),
+        },
+      },
     })
   }
 
