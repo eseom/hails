@@ -7,6 +7,11 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+      body {
+        font-size: 0.9em;
+      }
+    </style>
 
     <title></title>
   </head>
@@ -26,14 +31,13 @@
             </li>
           {% endfor %}
         </ul>
-        <span class="navbar-text">
-        </span>
+        <span class="navbar-text"></span>
       </div>
     </nav>
 
     <div class="container-fluid">
 
-      <h2 class="mt-3">{{ name }}</h2>
+      <h3 class="mt-3">{{ name }}</h3>
 
       <ul class="nav nav-tabs mt-3">
         <li class="nav-item">
@@ -42,11 +46,11 @@
           </a>
         </li>
       </ul>
-      <table class="table table-bordered table-sm mt-2">
+      <table class="table table-responsive table-bordered mt-2">
         <thead>
           <tr>
             {% for field, value in model.attributes %}
-              <th>{{ field }}</th>
+            <th><a href="#">{{ field }} <span class="glyphicons glyphicons-chevron-down"></span></a></th>
             {% endfor %}
           </tr>
         </thead>
